@@ -131,6 +131,7 @@ log = print
 -- TODO: move into separate file
 local major, minor, revision = love.getVersion()
 
+-- FIXME
 -- fixes for 0.10.2
 if major == 0 and minor == 10 and revision == 2 then
 	-- workaround love2d 0.10.2 shader bug
@@ -141,6 +142,7 @@ else
 	shdr_unpack = unpack
 end
 
+-- FIXME
 -- minimal fixes for 0.9.2 to make picolove work
 if major == 0 and minor == 9 then
 	love.graphics.isActive = function()
@@ -195,7 +197,8 @@ function _load(_cartname)
 
 	local file_found = false
 	for i = 1, #exts do
-		if love.filesystem.isFile(currentDirectory .. cart_no_ext .. exts[i]) then
+		-- FIXME use FileType.file argument
+		if love.filesystem.getInfo(currentDirectory .. cart_no_ext .. exts[i]) then
 			file_found = true
 			_cartname = cart_no_ext .. exts[i]
 			break

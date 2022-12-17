@@ -10,12 +10,10 @@ function love.conf(t)
 
 	t.identity = "pico2d"
 
-	-- 0.9.2  is wip
-	-- 0.10.2 is default
-	-- 11.3   is wip
-	if t.version ~= "0.9.2" and t.version ~= "0.10.2" and t.version ~= "11.3" then
+	-- Love 11.x is only supported
+	if t.version ~= "0.9" and t.version ~= "0.10" then
 		-- show default version if no match
-		t.version = "0.10.2"
+		t.version = "11.4"
 	end
 
 	t.window.title = "PICÖ2D"
