@@ -133,14 +133,21 @@ local major, minor, revision = love.getVersion()
 
 -- FIXME
 -- fixes for 0.10.2
-if major == 0 and minor == 10 and revision == 2 then
+--if major == 0 and minor == 10 and revision == 2 then
 	-- workaround love2d 0.10.2 shader bug
-	function shdr_unpack(thing)
-		return unpack(thing, 1, table.maxn(thing) + 1)
-	end
-else
-	shdr_unpack = unpack
-end
+--	function shdr_unpack(thing)
+--		return unpack(thing, 1, table.maxn(thing) + 1)
+--	end
+--else
+--	shdr_unpack = unpack
+--end
+
+-- FIXME Check if we need this one from LOVE11 gamax
+--function shdr_unpack(thing)
+--	return unpack(thing, 0, 15)
+--end
+
+shdr_unpack = unpack -- FIXME ???
 
 -- FIXME
 -- minimal fixes for 0.9.2 to make picolove work
@@ -344,6 +351,13 @@ function love.load(argv)
 		pico8.pal_transparent[i] = i == 1 and 0 or 1
 		pico8.display_palette[i] = pico8.palette[i]
 	end
+
+-- FIXME UPD - all was reversed !!!	
+-- FIXME LOVE11 gamax - shaders code bit different
+-- FIXME all picolove 16.0 were replaced for 15.0 numbers
+-- FIXME and last 256.0 for 255.0
+-- https://github.com/gamax92/picolove/commit/110189bb09b3491e0d1255b8849de3a3866e8f44#diff-cee6f7ace765d4b3e8274806fb658676b5f550810b495d8987ea30ab1121ea73R329
+
 
 	pico8.draw_shader = love.graphics.newShader([[
 extern float palette[16];

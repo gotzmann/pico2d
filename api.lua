@@ -1033,7 +1033,7 @@ function api.sset(x, y, c)
 	y = flr(tonumber(y) or 0)
 	c = flr(tonumber(c) or 0)
 	-- pico8.spritesheet_data:setPixel(x, y, c * 16, 0, 0, 255) -- LOVE11 gamax
-	pico8.spritesheet_data:setPixel(x, y, c/15, 0, 0, 1)
+	pico8.spritesheet_data:setPixel(x, y, c / 16, 0, 0, 1)
 	pico8.spritesheet:refresh()
 end
 
@@ -1273,6 +1273,8 @@ function api.poke4(addr, val)
 	api.poke(addr + 3, bit.rshift(bit.band(val, 0xFF000000), 24))
 end
 
+-- FIXME Use screen memory from gamax hacks: 
+-- https://github.com/gamax92/picolove/commit/110189bb09b3491e0d1255b8849de3a3866e8f44#diff-03f26099aa13de776c192ea8143fa3cac7471f1ca076626465e92821420f79d0R766
 function api.memcpy(dest_addr, source_addr, len)
 	if len < 1 or dest_addr == source_addr then
 		return
