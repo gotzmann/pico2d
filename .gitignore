@@ -2,6 +2,7 @@
 !nocart.p8
 !editor.p8
 !test/*.p8
+!celeste.p8
 .DS_Store
 build/*.love
 luacov.report.out

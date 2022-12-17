@@ -1380,7 +1380,7 @@ api.shr = bit.rshift
 function api.load(filename)
 	local hasloaded = _load(filename)
 	if hasloaded then
-		love.window.setTitle(string.upper(cartname) .. " (PICOLÖVE)")
+		love.window.setTitle(string.upper(cartname) .. " (PICÖ8)")
 	end
 	return hasloaded
 end
@@ -1503,7 +1503,7 @@ function api.help()
 	api.print("")
 	api.color(12)
 	api.print("see readme.md for more info")
-	api.print("or visit: github.com/picolove")
+	api.print("or visit: github.com/gotzmann/pico2d")
 	api.print("")
 end
 

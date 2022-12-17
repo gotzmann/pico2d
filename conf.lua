@@ -1,4 +1,4 @@
-__picolove_version = "0.1.0"
+__picolove_version = "0.1a"
 
 scale = 4
 xpadding = 8.5
@@ -8,7 +8,7 @@ __pico_resolution = { 128, 128 }
 function love.conf(t)
 	t.console = true
 
-	t.identity = "picolove"
+	t.identity = "pico2d"
 
 	-- 0.9.2  is wip
 	-- 0.10.2 is default
@@ -18,8 +18,8 @@ function love.conf(t)
 		t.version = "0.10.2"
 	end
 
-	t.window.title = "PICOLÖVE"
-	t.window.icon = "icon.png"
+	t.window.title = "PICÖ2D"
+--	t.window.icon = "icon.png"
 	t.window.width = __pico_resolution[1] * scale + xpadding * scale * 2
 	t.window.height = __pico_resolution[2] * scale + ypadding * scale * 2
 	t.window.resizable = true

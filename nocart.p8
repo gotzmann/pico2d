@@ -34,15 +34,15 @@ function _init()
 	print("")
 	print("")
 	print("")
-	print("picolove " .. _getpicoloveversion())
-	print("a pico-8 clone made with love <3")
+	print("pico2d " .. _getpicoloveversion())
+	print("a pico-8 clone made with love2d <3")
 	print("")
 	print("type help for help")
 	print("")
 
 	-- show umlauts on "picolove" text
-	print(".", 19, 12)
-	print(".", 21, 12)
+	print(".", 11, 12)
+	print(".", 13, 12)
 
 	-- optional: show umlauts on "made with love" text
 	--print(".", 103, 18)
