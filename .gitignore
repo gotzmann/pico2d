@@ -1,0 +1,8 @@
+*.p8
+!nocart.p8
+!editor.p8
+!test/*.p8
+.DS_Store
+build/*.love
+luacov.report.out
+luacov.stats.out
