@@ -105,9 +105,11 @@ function cart.load_p8(filename)
 		local version = nil
 		local compressed = false
 		local sprite = 0
+
 		for y = 0, 204 do
 			for x = 0, 159 do
 				local r, g, b, a = data:getPixel(x, y)
+				r, g, b, a=r*255, g*255, b*255, a*255 -- LOVE11 gamax
 				-- extract lowest bits
 				r = bit.band(r, 0x0003)
 				g = bit.band(g, 0x0003)
@@ -119,7 +121,7 @@ function cart.load_p8(filename)
 					bit.lshift(r, 6),
 					bit.lshift(g, 6),
 					bit.lshift(b, 6),
-					255
+					1 -- 255
 				)
 				local byte = bit.lshift(a, 6) + bit.lshift(r, 4) + bit.lshift(g, 2) + b
 				local lo = bit.band(byte, 0x0f)
@@ -134,9 +136,11 @@ function cart.load_p8(filename)
 							mapY = mapY + 1
 						end
 					end
-					pico8.spritesheet_data:setPixel(outX, outY, lo * 16, lo * 16, lo * 16)
+					-- pico8.spritesheet_data:setPixel(outX, outY, lo * 16, lo * 16, lo * 16) -- LOVE11 gamax
+					pico8.spritesheet_data:setPixel(outX, outY, lo/15, 0, 0, 1)
 					outX = outX + 1
-					pico8.spritesheet_data:setPixel(outX, outY, hi * 16, hi * 16, hi * 16)
+					-- pico8.spritesheet_data:setPixel(outX, outY, hi * 16, hi * 16, hi * 16) -- LOVE11 gamax
+					pico8.spritesheet_data:setPixel(outX, outY, hi/15, 0, 0, 1)
 					outX = outX + 1
 					if outX == 128 then
 						outY = outY + 1
@@ -285,7 +289,8 @@ function cart.load_p8(filename)
 				local col = 0
 				for v in line:gmatch(".") do
 					v = tonumber(v, 16)
-					pico8.spritesheet_data:setPixel(col, row, v * 16, v * 16, v * 16, 255)
+					-- pico8.spritesheet_data:setPixel(col, row, v * 16, v * 16, v * 16, 255) -- LOVE11 gamax
+					pico8.spritesheet_data:setPixel(col, row, v/15, 0, 0, 1)
 
 					col = col + 1
 					if col == 128 then
@@ -305,8 +310,10 @@ function cart.load_p8(filename)
 			for sy = 64, 127 do
 				for sx = 0, 127, 2 do
 					-- get the two pixel values and merge them
-					local lo = api.flr(pico8.spritesheet_data:getPixel(sx, sy) / 16)
-					local hi = api.flr(pico8.spritesheet_data:getPixel(sx + 1, sy) / 16)
+					--local lo = api.flr(pico8.spritesheet_data:getPixel(sx, sy) / 16) -- LOVE11 gamax
+					--local hi = api.flr(pico8.spritesheet_data:getPixel(sx + 1, sy) / 16) -- LOVE11 gamax
+					local lo=pico8.spritesheet_data:getPixel(sx, sy)*15
+					local hi=pico8.spritesheet_data:getPixel(sx+1, sy)*15
 					local v = bit.bor(bit.lshift(hi, 4), lo)
 					pico8.map[ty][tx] = v
 					shared = shared + 1

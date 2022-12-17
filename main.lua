@@ -173,7 +173,8 @@ function restore_clip()
 end
 
 function setColor(c)
-	love.graphics.setColor(c * 16, 0, 0, 255)
+	--love.graphics.setColor(c * 16, 0, 0, 255)
+	love.graphics.setColor(c/15, 0, 0, 1) -- LOVE11
 end
 
 function _load(_cartname)
@@ -198,7 +199,7 @@ function _load(_cartname)
 	local file_found = false
 	for i = 1, #exts do
 		-- FIXME use FileType.file argument
-		if love.filesystem.getInfo(currentDirectory .. cart_no_ext .. exts[i]) then
+		if love.filesystem.getInfo(currentDirectory .. cart_no_ext .. exts[i]) ~= nil then
 			file_found = true
 			_cartname = cart_no_ext .. exts[i]
 			break

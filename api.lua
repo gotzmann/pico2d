@@ -121,7 +121,9 @@ function api.cls(col)
 	col = flr(tonumber(col) or 0) % 16
 	col = col + 1 -- TODO: fix workaround
 
-	love.graphics.clear(col * 16, 0, 0, 255)
+	-- LOVE11 In versions prior to 11.0, color component values were within the range of 0 to 255 instead of 0 to 1.
+	-- love.graphics.clear(col * 16, 0, 0, 1)
+	love.graphics.clear(col/15, 0, 0, 1) -- FIXME LOVE11 - just col, not divide?
 	pico8.cursor = { 0, 0 }
 end
 
@@ -408,10 +410,18 @@ function api.pget(x, y)
 		and y < pico8.resolution[2]
 	then
 		love.graphics.setCanvas()
+
 		local __screen_img = pico8.screen:newImageData()
 		love.graphics.setCanvas(pico8.screen)
-		local r = __screen_img:getPixel(flr(x), flr(y))
-		return flr(r / 17.0)
+		-- local r = __screen_img:getPixel(flr(x), flr(y))
+		local c = __screen_img:getPixel(flr(x), flr(y))*15
+		--return flr(r / 17.0)
+		return c
+
+		-- FIXME LOVE11 - gamax92 version
+		-- local c=pico8.screen:newImageData():getPixel(flr(x), flr(y))*15
+		-- love.graphics.setCanvas(pico8.screen)
+		-- return c
 	end
 	warning(string.format("pget out of screen %d, %d", x, y))
 	return 0
@@ -1008,6 +1018,9 @@ function api.sget(x, y)
 	if x >= 0 and x < 128 and y >= 0 and y < 128 then
 		local c = pico8.spritesheet_data:getPixel(x, y)
 		return flr(c / 16)
+		-- FIXME LOVE11 gamax version
+		-- local c=pico8.spritesheet_data:getPixel(x, y)*15
+		-- return c
 	end
 	return 0
 end
