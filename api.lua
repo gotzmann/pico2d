@@ -117,13 +117,15 @@ function api.clip(x, y, w, h)
 	end
 end
 
-function api.cls(col)
-	col = flr(tonumber(col) or 0) % 16
-	col = col + 1 -- TODO: fix workaround
+function api.cls(c)
+	-- WAS col = flr(tonumber(col) or 0) % 16
+	-- WAS col = col + 1 -- TODO: fix workaround
+
+	c = flr(tonumber(c) or 0) -- FIXME LOVE11
 
 	-- LOVE11 In versions prior to 11.0, color component values were within the range of 0 to 255 instead of 0 to 1.
 	-- love.graphics.clear(col * 16, 0, 0, 1)
-	love.graphics.clear(col/15, 0, 0, 1) -- FIXME LOVE11 - just col, not divide?
+	love.graphics.clear(c / 15, 0, 0, 1) -- FIXME LOVE11 - just col, not divide?
 	pico8.cursor = { 0, 0 }
 end
 
@@ -1016,11 +1018,12 @@ function api.sget(x, y)
 	y = flr(tonumber(y) or 0)
 
 	if x >= 0 and x < 128 and y >= 0 and y < 128 then
-		local c = pico8.spritesheet_data:getPixel(x, y)
-		return flr(c / 16)
+		-- local c = pico8.spritesheet_data:getPixel(x, y)
+		-- return flr(c / 16)
+
 		-- FIXME LOVE11 gamax version
-		-- local c=pico8.spritesheet_data:getPixel(x, y)*15
-		-- return c
+		local c = pico8.spritesheet_data:getPixel(x, y) * 15
+		return c
 	end
 	return 0
 end
@@ -1029,7 +1032,8 @@ function api.sset(x, y, c)
 	x = flr(tonumber(x) or 0)
 	y = flr(tonumber(y) or 0)
 	c = flr(tonumber(c) or 0)
-	pico8.spritesheet_data:setPixel(x, y, c * 16, 0, 0, 255)
+	-- pico8.spritesheet_data:setPixel(x, y, c * 16, 0, 0, 255) -- LOVE11 gamax
+	pico8.spritesheet_data:setPixel(x, y, c/15, 0, 0, 1)
 	pico8.spritesheet:refresh()
 end
 
@@ -1287,9 +1291,14 @@ function api.memcpy(dest_addr, source_addr, len)
 	for i = 0, len - 1 do
 		local x = flr(source_addr - 0x6000 + i) % 64 * 2
 		local y = flr((source_addr - 0x6000 + i) / 64)
+
 		--TODO: why are colors broken?
-		local c = api.ceil(img:getPixel(x, y) / 16)
-		local d = api.ceil(img:getPixel(x + 1, y) / 16)
+		-- WAS local c = api.ceil(img:getPixel(x, y) / 16)
+		-- WAS local d = api.ceil(img:getPixel(x + 1, y) / 16)
+		-- FIXME Think about
+		local c = api.ceil(img:getPixel(x, y) * 15)
+		local d = api.ceil(img:getPixel(x + 1, y) * 15)
+		
 		if c ~= 0 then
 			c = c - 1
 		end
