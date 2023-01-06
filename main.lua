@@ -251,7 +251,7 @@ function love.load(argv)
 	end
 
 	osc = {}
-
+--[[
 	-- tri
 	osc[0] = function(x)
 		return (abs((x % 1) * 2 - 1) * 2 - 1) * 0.7
@@ -283,6 +283,47 @@ function love.load(argv)
 		x = x * 4
 		return (abs((x % 2) - 1) - 0.5 + (abs(((x * 0.5) % 2) - 1) - 0.5) / 2 - 0.1)
 			* 0.7
+	end
+]]
+
+	-- Tweak audio to better match pico-8
+	-- Updated all volumes based on wav export results
+	-- Removed sample blending, pico-8 no longer has this
+	-- Noise is much more accurate now
+	-- For some reason LOVE is quieter than pico-8, hence the old louder values
+	-- https://github.com/gamax92/picolove/commit/166a4f485db47141103d4d5b9178b7150f22fbfe?diff=split
+
+	-- tri
+	osc[0]=function(x)
+		local t=x%1
+		return (abs(t*2-1)*2-1)*0.5
+	end
+
+	-- uneven tri
+	osc[1]=function(x)
+		local t=x%1
+		return (((t<0.875) and (t*16/7) or ((1-t)*16))-1)*0.5
+	end
+
+	-- saw
+	osc[2]=function(x)
+		return (x%1-0.5)*2/3
+	end
+
+	-- sqr
+	osc[3]=function(x)
+		return (x%1<0.5 and 1 or-1)*0.25
+	end
+
+	-- pulse
+	osc[4]=function(x)
+		return (x%1<0.3125 and 1 or-1)*0.25
+	end
+
+	-- organ
+	osc[5]=function(x)
+		x=x*4
+		return (abs((x%2)-1)-0.5+(abs(((x*0.5)%2)-1)-0.5)/2-0.1)*0.5
 	end
 
 	--[[
