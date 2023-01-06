@@ -55,6 +55,7 @@ function cart.load_p8(filename)
 	local lua = ""
 	pico8.quads = {}
 	pico8.spritesheet_data = love.image.newImageData(128, 128)
+	pico8.spritesheet_data:mapPixel(function() return 0, 0, 0, 1 end) -- gamax92
 	pico8.map = {}
 	for y = 0, 63 do
 		pico8.map[y] = {}
@@ -82,10 +83,14 @@ function cart.load_p8(filename)
 	for i = 0, 63 do
 		pico8.music[i] = {
 			loop = 0,
-			[0] = 1,
-			[1] = 2,
-			[2] = 3,
-			[3] = 4,
+			--[0] = 1,
+			--[1] = 2,
+			--[2] = 3,
+			--[3] = 4,
+			[0] = 65, -- gamax92
+			[1] = 66,
+			[2] = 67,
+			[3] = 68
 		}
 	end
 
