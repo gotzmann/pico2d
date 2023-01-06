@@ -1203,6 +1203,12 @@ function api.poke(addr, val)
 		pico8.usermemory[addr - 0x4300] = val
 	elseif addr < 0x5f00 then -- luacheck: ignore 542
 		-- TODO: cart data
+		-- gamax92
+		-- Connect cart data to memory
+		local ind=math.floor((addr-0x5e00)/4)
+		local oval=pico8.cartdata[ind]*0x10000
+		local shift=(addr%4)*8
+		pico8.cartdata[ind]=bit.bor(bit.band(oval, bit.bnot(bit.lshift(0xFF, shift))), bit.lshift(val, shift))/0x10000
 	elseif addr < 0x5f40 then -- luacheck: ignore 542
 		-- TODO: draw state
 		if addr == 0x5f26 then
