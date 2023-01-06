@@ -917,6 +917,7 @@ end
 
 function api.fillp(_)
 	-- TODO: implement this
+	-- TODO: oh jeez
 end
 
 function api.map(cel_x, cel_y, sx, sy, cel_w, cel_h, bitmask)
@@ -1123,6 +1124,10 @@ function api.peek(addr)
 		return 0
 	elseif addr < 0x2000 then -- luacheck: ignore 542
 		-- TODO: spritesheet data
+		-- older picolove + gamax92
+		local lo=pico8.spritesheet_data:getPixel(addr*2%128, flr(addr/64))*15
+		local hi=pico8.spritesheet_data:getPixel(addr*2%128+1, flr(addr/64))*15
+		return hi*16+lo
 	elseif addr < 0x3000 then
 		addr = addr - 0x2000
 		return pico8.map[flr(addr / 128)][addr % 128]
@@ -1191,8 +1196,19 @@ function api.poke(addr, val)
 	if addr < 0 or addr >= 0x8000 then
 		error("bad memory access")
 	elseif addr < 0x1000 then -- luacheck: ignore 542
+		-- older picolove + gamax92
+		local lo=val%16
+		local hi=flr(val/16)
+		pico8.spritesheet_data:setPixel(addr*2%128, flr(addr/64), lo/15, 0, 0, 1)
+		pico8.spritesheet_data:setPixel(addr*2%128+1, flr(addr/64), hi/15, 0, 0, 1)
 	elseif addr < 0x2000 then -- luacheck: ignore 542
 		-- TODO: spritesheet data
+		-- older picolove + gamax92
+		local lo=val%16
+		local hi=flr(val/16)
+		pico8.spritesheet_data:setPixel(addr*2%128, flr(addr/64), lo/15, 0, 0, 1)
+		pico8.spritesheet_data:setPixel(addr*2%128+1, flr(addr/64), hi/15, 0, 0, 1)
+		pico8.map[flr(addr/128)][addr%128]=val
 	elseif addr < 0x3000 then
 		addr = addr - 0x2000
 		pico8.map[flr(addr / 128)][addr % 128] = val
@@ -1359,6 +1375,7 @@ function api.srand(seed)
 	return love.math.setRandomSeed(flr(seed * 0x8000))
 end
 
+-- WTF?! Local? Replace with math?
 api.flr = math.floor
 api.ceil = math.ceil
 
@@ -1413,6 +1430,20 @@ api.bxor = bit.bxor
 api.bnot = bit.bnot
 api.shl = bit.lshift
 api.shr = bit.rshift
+
+-- FIXME Do we need 3 more bit shifts functions from gamax92?
+
+function api.lshr(x, y)
+	return bit.rshift(x*0x10000, y)/0x10000
+end
+
+function api.rotl(x, y)
+	return bit.rol(x*0x10000, y)/0x10000
+end
+
+function api.rotr(x, y)
+	return bit.ror(x*0x10000, y)/0x10000
+end
 
 function api.load(filename)
 	local hasloaded = _load(filename)
