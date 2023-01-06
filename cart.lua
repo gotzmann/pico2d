@@ -141,10 +141,10 @@ function cart.load_p8(filename)
 							mapY = mapY + 1
 						end
 					end
-					-- pico8.spritesheet_data:setPixel(outX, outY, lo * 16, lo * 16, lo * 16) -- LOVE11 gamax
+					-- pico8.spritesheet_data:setPixel(outX, outY, lo * 16, lo * 16, lo * 16) -- LOVE11 gamax92
 					pico8.spritesheet_data:setPixel(outX, outY, lo/15, 0, 0, 1)
 					outX = outX + 1
-					-- pico8.spritesheet_data:setPixel(outX, outY, hi * 16, hi * 16, hi * 16) -- LOVE11 gamax
+					-- pico8.spritesheet_data:setPixel(outX, outY, hi * 16, hi * 16, hi * 16) -- LOVE11 gamax92
 					pico8.spritesheet_data:setPixel(outX, outY, hi/15, 0, 0, 1)
 					outX = outX + 1
 					if outX == 128 then
@@ -319,6 +319,8 @@ function cart.load_p8(filename)
 					--local hi = api.flr(pico8.spritesheet_data:getPixel(sx + 1, sy) / 16) -- LOVE11 gamax
 					local lo = pico8.spritesheet_data:getPixel(sx, sy) * 15
 					local hi = pico8.spritesheet_data:getPixel(sx+1, sy) * 15
+					--local lo = api.flr(pico8.spritesheet_data:getPixel(sx, sy) * 15) -- gotzmann
+					--local hi = api.flr(pico8.spritesheet_data:getPixel(sx+1, sy) * 15) -- gotzmann
 					local v = bit.bor(bit.lshift(hi, 4), lo)
 					pico8.map[ty][tx] = v
 					shared = shared + 1

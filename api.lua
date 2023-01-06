@@ -2,10 +2,13 @@ local api = {}
 
 local flr = math.floor
 
+-- gotzmann speedup?
 local function color(c)
-	c = flr(c or 0) % 16
+	-- c = flr(c or 0) % 16
+	local c = math.floor(c or 0) % 16
 	pico8.color = c
-	setColor(c)
+	-- setColor(c)
+	love.graphics.setColor(c/15, 0, 0, 1)
 end
 
 local function warning(msg)
@@ -1033,8 +1036,8 @@ function api.sset(x, y, c)
 	x = flr(tonumber(x) or 0)
 	y = flr(tonumber(y) or 0)
 	c = flr(tonumber(c) or 0)
-	-- pico8.spritesheet_data:setPixel(x, y, c * 16, 0, 0, 255) -- LOVE11 gamax
-	pico8.spritesheet_data:setPixel(x, y, c / 15, 0, 0, 1)
+	-- pico8.spritesheet_data:setPixel(x, y, c * 16, 0, 0, 255) -- LOVE11 gamax92
+	pico8.spritesheet_data:setPixel(x, y, c/15, 0, 0, 1)
 	pico8.spritesheet:refresh()
 end
 
@@ -1294,9 +1297,11 @@ function api.memcpy(dest_addr, source_addr, len)
 	if source_addr + len > 0x8000 or dest_addr + len > 0x8000 then
 		return
 	end
+
 	love.graphics.setCanvas()
 	local img = pico8.screen:newImageData()
 	love.graphics.setCanvas(pico8.screen)
+
 	for i = 0, len - 1 do
 		local x = flr(source_addr - 0x6000 + i) % 64 * 2
 		local y = flr((source_addr - 0x6000 + i) / 64)
@@ -1305,8 +1310,9 @@ function api.memcpy(dest_addr, source_addr, len)
 		-- WAS local c = api.ceil(img:getPixel(x, y) / 16)
 		-- WAS local d = api.ceil(img:getPixel(x + 1, y) / 16)
 		-- FIXME Think about
-		local c = api.ceil(img:getPixel(x, y) * 15)
-		local d = api.ceil(img:getPixel(x + 1, y) * 15)
+		-- local c = api.ceil(img:getPixel(x, y) * 15)
+		local c = img:getPixel(x, y) * 15 -- gotzmann
+		local d = img:getPixel(x + 1, y) * 15 -- gotzmann
 		
 		if c ~= 0 then
 			c = c - 1
