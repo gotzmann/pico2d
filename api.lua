@@ -413,17 +413,17 @@ function api.pget(x, y)
 	then
 		love.graphics.setCanvas()
 
-		local __screen_img = pico8.screen:newImageData()
-		love.graphics.setCanvas(pico8.screen)
+		--local __screen_img = pico8.screen:newImageData()
+		--love.graphics.setCanvas(pico8.screen)
 		-- local r = __screen_img:getPixel(flr(x), flr(y))
-		local c = __screen_img:getPixel(flr(x), flr(y)) * 15
+		--local c = __screen_img:getPixel(flr(x), flr(y)) * 15
 		--return flr(r / 17.0)
-		return c
+		--return c
 
 		-- FIXME LOVE11 - gamax92 version
-		-- local c=pico8.screen:newImageData():getPixel(flr(x), flr(y))*15
-		-- love.graphics.setCanvas(pico8.screen)
-		-- return c
+		local c = pico8.screen:newImageData():getPixel(flr(x), flr(y)) * 15
+		love.graphics.setCanvas(pico8.screen)
+		return c
 	end
 	warning(string.format("pget out of screen %d, %d", x, y))
 	return 0

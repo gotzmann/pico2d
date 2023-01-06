@@ -183,7 +183,7 @@ end
 
 function setColor(c)
 	--love.graphics.setColor(c * 16, 0, 0, 255)
-	love.graphics.setColor(c/15, 0, 0, 1) -- LOVE11
+	love.graphics.setColor(c / 15, 0, 0, 1) -- LOVE11
 end
 
 function _load(_cartname)
@@ -1062,7 +1062,8 @@ function love.run()
 	local dt = 0
 
 	-- Main loop time.
-	while true do
+	-- while true do -- picolove
+	return function() -- gamax92
 		-- Process events.
 		if love.event then
 			love.graphics.setCanvas() -- TODO: Rework this
@@ -1071,10 +1072,11 @@ function love.run()
 			for name, a, b, c, d, e, f in love.event.poll() do
 				if name == "quit" then
 					if not love.quit or not love.quit() then
-						if love.audio then
-							love.audio.stop()
-						end
-						return
+						--if love.audio then
+						--	love.audio.stop()
+						--end
+						--return
+						return a or 0 -- gamax92
 					end
 				end
 				love.handlers[name](a, b, c, d, e, f)
@@ -1082,10 +1084,11 @@ function love.run()
 		end
 
 		-- Update dt, as we'll be passing it to update
-		if love.timer then
-			love.timer.step()
-			dt = dt + love.timer.getDelta()
-		end
+		--if love.timer then
+		--	love.timer.step()
+		--	dt = dt + love.timer.getDelta()
+		--end
+		if love.timer then dt=dt+love.timer.step() end -- gamax92
 
 		-- Call update and draw
 		local render = false
@@ -1175,11 +1178,14 @@ function patch_lua(lua)
 	test_test\test_test
 	(test+kfjdf)\(ahb\k39)
 	--]]
+
 	-- TODO: nested expressions, function calls, etc
 	lua = lua:gsub("([%w_%[%]*/]+)%s*\\%s*([%w_%[%]*/]+)", " flr(%1/%2) ")
+
 	-- rewrite inspect operator "?"
 	lua = lua:gsub("([\n\r]%s*)?([^\n\r]*)", "%1print(%2)")
 	lua = lua:gsub("^(%s*)?([^\n\r]*)", "%1print(%2)")
+
 	-- convert binary literals to hex literals
 	lua = lua:gsub("([^%w_])0[bB]([01.]+)", function(a, b)
 		local p1, p2 = b, ""
