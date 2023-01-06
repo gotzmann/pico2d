@@ -444,13 +444,19 @@ function love.load(argv)
 		extern float palette[16];
 
 		vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+
 			// int index = int(color.r*16.0);
 			// return vec4(vec3(palette[index]/16.0),1.0);
 
 			// gamax92
-			int index=int(color.r*15.0+0.5);
+			// int index=int(color.r*15.0+0.5);
 			// ifblock(palette);
-			return vec4(palette[index]/15.0, 0.0, 0.0, 1.0);
+			// return vec4(palette[index]/15.0, 0.0, 0.0, 1.0);
+
+			// gotzmann
+			int index = int(color.r * 16.0);
+			// return vec4(vec3(palette[index] / 16.0), 1.0);
+			return vec4(palette[index] / 16.0, 0.0, 0.0, 1.0);
 		}
 	]])
 	pico8.draw_shader:send("palette", shdr_unpack(pico8.draw_palette))
@@ -460,15 +466,23 @@ function love.load(argv)
 		extern float transparent[16];
 
 		vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+
 			// int index = int(floor(Texel(texture, texture_coords).r*16.0));
 			// float alpha = transparent[index];
 			// return vec4(vec3(palette[index]/16.0),alpha);
 
 			// gamax92
-			int index=int(Texel(texture, texture_coords).r*15.0+0.5);
+			// int index=int(Texel(texture, texture_coords).r*15.0+0.5);
 			// ifblock(palette);
 			// ifblock(transparent);
-			return vec4(palette[index]/15.0, 0.0, 0.0, transparent[index]);
+			// return vec4(palette[index]/15.0, 0.0, 0.0, transparent[index]);
+
+			// gotzmann
+			// int index = int(Texel(texture, texture_coords).r * 16.0);
+			int index = int(floor(Texel(texture, texture_coords).r * 16.0));
+			float alpha = transparent[index];
+			// return vec4(vec3(palette[index] / 16.0), alpha);
+			return vec4(palette[index] / 16.0, 0.0, 0.0, alpha);
 		}
 	]])
 	pico8.sprite_shader:send("palette", shdr_unpack(pico8.draw_palette))
@@ -478,6 +492,7 @@ function love.load(argv)
 		extern float palette[16];
 
 		vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+
 			//vec4 texcolor = Texel(texture, texture_coords);
 			// if(texcolor.a == 0.0) {
 			//     return vec4(0.0,0.0,0.0,0.0);
@@ -487,10 +502,20 @@ function love.load(argv)
 			// return vec4(vec3(palette[index]/16.0),1.0);
 
 			// gamax93
-			vec4 texcolor=Texel(texture, texture_coords);
-			int index=int(color.r*15.0+0.5);
+			// vec4 texcolor=Texel(texture, texture_coords);
+			// int index=int(color.r*15.0+0.5);
 			// ifblock(palette);
-			return vec4(palette[index]/15.0, 0.0, 0.0, texcolor.a);
+			// return vec4(palette[index]/15.0, 0.0, 0.0, texcolor.a);
+
+			// gotzmann
+			vec4 texcolor = Texel(texture, texture_coords);
+			// if(texcolor.a == 0.0) {
+			//     return vec4(0.0, 0.0, 0.0, 0.0);
+			// }
+			int index = int(color.r * 16.0);
+			// return vec4(vec3(palette[index] / 16.0), 1.0);
+			// return vec4(palette[index] / 15.0, 0.0, 0.0, texcolor.a);
+			return vec4(palette[index] / 16.0, 0.0, 0.0, texcolor.a);
 		}
 	]])
 	pico8.text_shader:send("palette", shdr_unpack(pico8.draw_palette))
@@ -499,15 +524,23 @@ function love.load(argv)
 		extern vec4 palette[16];
 
 		vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+
 			// int index = int(Texel(texture, texture_coords).r*15.0);
 			// lookup the color in the palette by index
 			// return palette[index]/256.0;
 
 			// gamax92
-			int index=int(Texel(texture, texture_coords).r*15.0+0.5);
+			// int index=int(Texel(texture, texture_coords).r*15.0+0.5);
 			// ifblock(palette);
 			// lookup the colour in the palette by index
-			return palette[index]/255.0;
+			// return palette[index]/255.0;
+
+			// gotzmann
+			// int index = int(Texel(texture, texture_coords).r * 16.0);
+			int index = int(Texel(texture, texture_coords).r * 15.0);
+			// lookup the colour in the palette by index
+			// return palette[index] / 256.0;
+			return palette[index] / 256.0;
 		}
 	]])
 	pico8.display_shader:send("palette", shdr_unpack(pico8.display_palette))
