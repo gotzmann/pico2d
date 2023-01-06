@@ -109,7 +109,7 @@ function cart.load_p8(filename)
 		for y = 0, 204 do
 			for x = 0, 159 do
 				local r, g, b, a = data:getPixel(x, y)
-				r, g, b, a=r*255, g*255, b*255, a*255 -- LOVE11 gamax
+				r, g, b, a = r*255, g*255, b*255, a*255 -- LOVE11 gamax
 				-- extract lowest bits
 				r = bit.band(r, 0x0003)
 				g = bit.band(g, 0x0003)
@@ -312,8 +312,8 @@ function cart.load_p8(filename)
 					-- get the two pixel values and merge them
 					--local lo = api.flr(pico8.spritesheet_data:getPixel(sx, sy) / 16) -- LOVE11 gamax
 					--local hi = api.flr(pico8.spritesheet_data:getPixel(sx + 1, sy) / 16) -- LOVE11 gamax
-					local lo=pico8.spritesheet_data:getPixel(sx, sy)*15
-					local hi=pico8.spritesheet_data:getPixel(sx+1, sy)*15
+					local lo=pico8.spritesheet_data:getPixel(sx, sy) * 15
+					local hi=pico8.spritesheet_data:getPixel(sx+1, sy) * 15
 					local v = bit.bor(bit.lshift(hi, 4), lo)
 					pico8.map[ty][tx] = v
 					shared = shared + 1
@@ -389,7 +389,7 @@ function cart.load_p8(filename)
 				end
 			end
 
-			--assert(tiles + shared == 128 * 64, string.format("%d + %d != %d", tiles, shared, 128 * 64))
+			--assert(tiles + shared == 128 * 64, string.format("%d + %d != %d", tiles, shared, 128 * 64)) -- REMOVED both by gamax and picolove
 		end
 
 		-- load sfx

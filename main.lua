@@ -2,7 +2,8 @@ package.path = package.path .. ";?.lua;lib/?.lua"
 love.filesystem.setRequirePath(package.path)
 
 require("strict")
-local QueueableSource = require("QueueableSource")
+-- local QueueableSource = require("QueueableSource") -- LOVE11 gamax
+local QueueableSource = require("QueueableSource") -- FIXME
 
 local bit = require("bit")
 
@@ -250,33 +251,41 @@ function love.load(argv)
 	end
 
 	osc = {}
+
 	-- tri
 	osc[0] = function(x)
 		return (abs((x % 1) * 2 - 1) * 2 - 1) * 0.7
 	end
+
 	-- uneven tri
 	osc[1] = function(x)
 		local t = x % 1
 		return (((t < 0.875) and (t * 16 / 7) or ((1 - t) * 16)) - 1) * 0.7
 	end
+
 	-- saw
 	osc[2] = function(x)
 		return (x % 1 - 0.5) * 0.9
 	end
+
 	-- sqr
 	osc[3] = function(x)
 		return (x % 1 < 0.5 and 1 or -1) * 1 / 3
 	end
+
 	-- pulse
 	osc[4] = function(x)
 		return (x % 1 < 0.3125 and 1 or -1) * 1 / 3
 	end
+
 	-- tri/2
 	osc[5] = function(x)
 		x = x * 4
 		return (abs((x % 2) - 1) - 0.5 + (abs(((x * 0.5) % 2) - 1) - 0.5) / 2 - 0.1)
 			* 0.7
 	end
+
+	--[[
 	-- noise
 	osc[6] = function()
 		local lastx = 0
@@ -294,12 +303,42 @@ function love.load(argv)
 			) * 0.7
 		end
 	end
+	]]
+
+	-- noise from gamax92
+	-- Tweak noise generator to better match pico-8
+	-- Every second sample is a range limited duplicate
+	-- https://github.com/gamax92/picolove/commit/bd8e8aa9d869a578e82cdcf94fd049bdecc08c00?diff=split
+	osc[6]=function()
+		local lastx=0
+		local sample=0
+		local update=false
+		local hz48=note_to_hz(48)
+		return function(x)
+			local hz=((x-lastx)%1)*__sample_rate
+			lastx=x
+			local scale=hz*(131072/343042875)+(16/889)
+
+			update=not update
+			if update then
+				sample=sample+scale*(love.math.random()*2-1)
+			end
+			local output=sample*(45/32)
+			if hz > hz48 then
+				output=output*(1.1659377442658412e+000-2.3350687035974510e-004*hz+8.3385655344351036e-008*hz^2-1.1509506025078735e-011*hz^3) -- approximate
+			end
+			sample=math.max(math.min(sample, (6143/31115)), -(6143/31115))
+			return output
+		end
+	end
+
 	-- detuned tri
 	osc[7] = function(x)
 		x = x * 2
 		return (abs((x % 2) - 1) - 0.5 + (abs(((x * 127 / 128) % 2) - 1) - 0.5) / 2)
 			- 1 / 4
 	end
+
 	-- saw from 0 to 1, used for arppregiator
 	osc["saw_lfo"] = function(x)
 		return x % 1

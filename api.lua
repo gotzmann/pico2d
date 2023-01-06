@@ -416,7 +416,7 @@ function api.pget(x, y)
 		local __screen_img = pico8.screen:newImageData()
 		love.graphics.setCanvas(pico8.screen)
 		-- local r = __screen_img:getPixel(flr(x), flr(y))
-		local c = __screen_img:getPixel(flr(x), flr(y))*15
+		local c = __screen_img:getPixel(flr(x), flr(y)) * 15
 		--return flr(r / 17.0)
 		return c
 
@@ -918,7 +918,8 @@ end
 
 function api.map(cel_x, cel_y, sx, sy, cel_w, cel_h, bitmask)
 	love.graphics.setShader(pico8.sprite_shader)
-	love.graphics.setColor(255, 255, 255, 255)
+	-- WAS love.graphics.setColor(255, 255, 255, 255)
+	love.graphics.setColor(1, 1, 1, 1)
 	cel_x = flr(cel_x or 0)
 	cel_y = flr(cel_y or 0)
 	sx = flr(sx or 0)
@@ -1033,7 +1034,7 @@ function api.sset(x, y, c)
 	y = flr(tonumber(y) or 0)
 	c = flr(tonumber(c) or 0)
 	-- pico8.spritesheet_data:setPixel(x, y, c * 16, 0, 0, 255) -- LOVE11 gamax
-	pico8.spritesheet_data:setPixel(x, y, c / 16, 0, 0, 1)
+	pico8.spritesheet_data:setPixel(x, y, c / 15, 0, 0, 1)
 	pico8.spritesheet:refresh()
 end
 
