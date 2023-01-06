@@ -183,7 +183,7 @@ end
 
 function setColor(c)
 	--love.graphics.setColor(c * 16, 0, 0, 255)
-	love.graphics.setColor(c / 15, 0, 0, 1) -- LOVE11
+	love.graphics.setColor(c/15, 0, 0, 1) -- LOVE11
 end
 
 function _load(_cartname)
@@ -441,48 +441,75 @@ function love.load(argv)
 
 
 	pico8.draw_shader = love.graphics.newShader([[
-extern float palette[16];
+		extern float palette[16];
 
-vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
-	int index = int(color.r*16.0);
-	return vec4(vec3(palette[index]/16.0),1.0);
-}]])
+		vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+			// int index = int(color.r*16.0);
+			// return vec4(vec3(palette[index]/16.0),1.0);
+
+			// gamax92
+			int index=int(color.r*15.0+0.5);
+			// ifblock(palette);
+			return vec4(palette[index]/15.0, 0.0, 0.0, 1.0);
+		}
+	]])
 	pico8.draw_shader:send("palette", shdr_unpack(pico8.draw_palette))
 
 	pico8.sprite_shader = love.graphics.newShader([[
-extern float palette[16];
-extern float transparent[16];
+		extern float palette[16];
+		extern float transparent[16];
 
-vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
-	int index = int(floor(Texel(texture, texture_coords).r*16.0));
-	float alpha = transparent[index];
-	return vec4(vec3(palette[index]/16.0),alpha);
-}]])
+		vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+			// int index = int(floor(Texel(texture, texture_coords).r*16.0));
+			// float alpha = transparent[index];
+			// return vec4(vec3(palette[index]/16.0),alpha);
+
+			// gamax92
+			int index=int(Texel(texture, texture_coords).r*15.0+0.5);
+			// ifblock(palette);
+			// ifblock(transparent);
+			return vec4(palette[index]/15.0, 0.0, 0.0, transparent[index]);
+		}
+	]])
 	pico8.sprite_shader:send("palette", shdr_unpack(pico8.draw_palette))
 	pico8.sprite_shader:send("transparent", shdr_unpack(pico8.pal_transparent))
 
 	pico8.text_shader = love.graphics.newShader([[
-extern float palette[16];
+		extern float palette[16];
 
-vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
-	vec4 texcolor = Texel(texture, texture_coords);
-	if(texcolor.a == 0.0) {
-		return vec4(0.0,0.0,0.0,0.0);
-	}
-	int index = int(color.r*16.0);
-	// lookup the color in the palette by index
-	return vec4(vec3(palette[index]/16.0),1.0);
-}]])
+		vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+			//vec4 texcolor = Texel(texture, texture_coords);
+			// if(texcolor.a == 0.0) {
+			//     return vec4(0.0,0.0,0.0,0.0);
+			// }
+			// int index = int(color.r*16.0);
+			// lookup the color in the palette by index
+			// return vec4(vec3(palette[index]/16.0),1.0);
+
+			// gamax93
+			vec4 texcolor=Texel(texture, texture_coords);
+			int index=int(color.r*15.0+0.5);
+			// ifblock(palette);
+			return vec4(palette[index]/15.0, 0.0, 0.0, texcolor.a);
+		}
+	]])
 	pico8.text_shader:send("palette", shdr_unpack(pico8.draw_palette))
 
 	pico8.display_shader = love.graphics.newShader([[
-extern vec4 palette[16];
+		extern vec4 palette[16];
 
-vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
-	int index = int(Texel(texture, texture_coords).r*15.0);
-	// lookup the color in the palette by index
-	return palette[index]/256.0;
-}]])
+		vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+			// int index = int(Texel(texture, texture_coords).r*15.0);
+			// lookup the color in the palette by index
+			// return palette[index]/256.0;
+
+			// gamax92
+			int index=int(Texel(texture, texture_coords).r*15.0+0.5);
+			// ifblock(palette);
+			// lookup the colour in the palette by index
+			return palette[index]/255.0;
+		}
+	]])
 	pico8.display_shader:send("palette", shdr_unpack(pico8.display_palette))
 
 	-- load the cart
@@ -943,10 +970,16 @@ function love.keypressed(key)
 		paused = not paused
 	elseif key == "f1" or key == "f6" then
 		-- screenshot
-		local screenshot = love.graphics.newScreenshot(false)
-		local filename = cartname .. "-" .. os.time() .. ".png"
-		screenshot:encode("png", filename)
-		log("saved screenshot to", filename)
+		--local screenshot = love.graphics.newScreenshot(false)
+		--local filename = cartname .. "-" .. os.time() .. ".png"
+		--screenshot:encode("png", filename)
+		--log("saved screenshot to", filename)
+		-- gamax92
+		local screenshot=love.graphics.newScreenshot(false)
+		local filename=cartname..'-'..os.time()..'.png'
+		screenshot:encode(filename)
+		love.graphics.captureScreenshot(filename)
+		log('saved screenshot to', filename)
 	elseif key == "f3" or key == "f8" then
 		-- start recording
 		video_frames = {}
@@ -1046,12 +1079,14 @@ function love.run()
 		end
 	end
 
-	if love.event then
-		love.event.pump()
-	end
+	-- commented out by gamax92
+	--if love.event then
+	--	love.event.pump()
+	--end
 
 	if love.load then
-		love.load(arg)
+		-- love.load(arg)
+		if love.load then love.load(love.arg.parseGameArguments(arg), arg) end -- gamax92
 	end
 
 	-- We don't want the first frame's dt to include time taken by love.load.

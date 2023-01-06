@@ -1479,7 +1479,7 @@ function api.stop(message, x, y, col) -- luacheck: no unused
 end
 
 function api.reboot()
-	love.window.setTitle("UNTITLED.P8 (PICOLÖVE)")
+	love.window.setTitle("UNTITLED.P8 (PICÖ2D)")
 	_load("nocart.p8")
 	api.run()
 	cartname = nil
