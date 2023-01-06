@@ -1681,10 +1681,28 @@ function api.stat(x)
 		return pico8.fps -- target fps
 	elseif x == 9 then
 		return love.timer.getFPS()
+
+	-- Older picolove + gamax92 code	
+	elseif x >= 16 and x <= 23 then
+		local ch=pico8.audio_channels[x%4]
+		if not ch.sfx then
+			return -1
+		elseif x < 20 then
+			return ch.sfx
+		else
+			return flr(ch.offset)
+		end
+
+	-- gamax92	
+	elseif x == 30 then
+		return #pico8.kbdbuffer ~= 0
+	elseif x == 31 then
+		return (table.remove(pico8.kbdbuffer, 1) or "")	
+
 	elseif x == 32 then
-		return getmousex()
+		return getmousex() -- TODO getMouseX()
 	elseif x == 33 then
-		return getmousey()
+		return getmousey() -- TODO getMouseY
 	elseif x == 34 then
 		local btns = 0
 		for i = 0, 2 do

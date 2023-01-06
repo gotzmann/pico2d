@@ -53,6 +53,7 @@ pico8 = {
 		[0] = {},
 		[1] = {},
 	},
+	kbdbuffer={},
 	keymap = {
 		[0] = {
 			[0] = { "left", "kp4" },
@@ -992,6 +993,16 @@ function love.keyreleased(key)
 		return pico8.cart._keyup(key)
 	end
 end
+
+--[[ gamax92
+	function love.textinput(text)
+		table.insert(pico8.kbdbuffer, text)
+		while #pico8.kbdbuffer > 255 do
+			table.remove(pico8.kbdbuffer, 1)
+		end
+		if cart and pico8.cart._textinput then return pico8.cart._textinput(text) end
+	end
+]]
 
 function love.textinput(text)
 	text = text:lower()
