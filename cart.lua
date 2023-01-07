@@ -317,8 +317,8 @@ function cart.load_p8(filename)
 					-- get the two pixel values and merge them
 					--local lo = api.flr(pico8.spritesheet_data:getPixel(sx, sy) / 16) -- LOVE11 gamax
 					--local hi = api.flr(pico8.spritesheet_data:getPixel(sx + 1, sy) / 16) -- LOVE11 gamax
-					local lo = pico8.spritesheet_data:getPixel(sx, sy) * 15
-					local hi = pico8.spritesheet_data:getPixel(sx+1, sy) * 15
+					local lo = pico8.spritesheet_data:getPixel(sx, sy) * 16
+					local hi = pico8.spritesheet_data:getPixel(sx+1, sy) * 16
 					--local lo = api.flr(pico8.spritesheet_data:getPixel(sx, sy) * 15) -- gotzmann
 					--local hi = api.flr(pico8.spritesheet_data:getPixel(sx+1, sy) * 15) -- gotzmann
 					local v = bit.bor(bit.lshift(hi, 4), lo)

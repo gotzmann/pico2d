@@ -424,7 +424,7 @@ function api.pget(x, y)
 		--return c
 
 		-- FIXME LOVE11 - gamax92 version
-		local c = pico8.screen:newImageData():getPixel(flr(x), flr(y)) * 15
+		local c = pico8.screen:newImageData():getPixel(flr(x), flr(y)) * 16
 		love.graphics.setCanvas(pico8.screen)
 		return c
 	end
@@ -1027,7 +1027,7 @@ function api.sget(x, y)
 		-- return flr(c / 16)
 
 		-- FIXME LOVE11 gamax version
-		local c = pico8.spritesheet_data:getPixel(x, y) * 15
+		local c = pico8.spritesheet_data:getPixel(x, y) * 16
 		return c
 	end
 	return 0
@@ -1327,8 +1327,8 @@ function api.memcpy(dest_addr, source_addr, len)
 		-- WAS local d = api.ceil(img:getPixel(x + 1, y) / 16)
 		-- FIXME Think about
 		-- local c = api.ceil(img:getPixel(x, y) * 15)
-		local c = img:getPixel(x, y) * 15 -- gotzmann
-		local d = img:getPixel(x + 1, y) * 15 -- gotzmann
+		local c = img:getPixel(x, y) * 16 -- gotzmann
+		local d = img:getPixel(x + 1, y) * 16 -- gotzmann
 		
 		if c ~= 0 then
 			c = c - 1
@@ -1482,15 +1482,15 @@ function api.run()
 	end
 
 	-- gotzmann DEBUG
-	log("======= :: ========")
-	log(loaded_code)
-	log("======= :: ========")
+	--log("======= :: ========")
+	--log(loaded_code)
+	--log("======= :: ========")
 
 	local ok, f, e = pcall(load, loaded_code, cartname)
 	if not ok or f == nil then
-		log("=======8<========")
+		log("=======[ 8< ]========")
 		log(loaded_code)
-		log("=======>8========")
+		log("=======[ >8 ]========")
 		error("Error loading lua: " .. tostring(e))
 	else
 		setfenv(f, pico8.cart)

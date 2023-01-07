@@ -515,6 +515,7 @@ function love.load(argv)
 			int index = int(color.r * 16.0);
 			// return vec4(vec3(palette[index] / 16.0), 1.0);
 			// return vec4(palette[index] / 15.0, 0.0, 0.0, texcolor.a);
+			
 			return vec4(palette[index] / 16.0, 0.0, 0.0, texcolor.a);
 		}
 	]])
