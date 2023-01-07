@@ -858,6 +858,7 @@ local function update_audio(time)
 				end
 			end
 		end
+
 		-- TODO: figure out what this was used for
 		--local music = pico8.current_music and pico8.music[pico8.current_music.music] or nil
 
@@ -934,23 +935,26 @@ local function update_audio(time)
 						-- fade out
 						vol = lerp(ch.vol, 0, ch.offset % 1)
 					elseif ch.fx == 6 then
-						-- fast appreggio over 4 steps
+						-- fast arpeggio over 4 steps
 						local off = bit.band(flr(ch.offset), 0xfc)
 						local lfo = flr(ch.lfo(8) * 4)
 						off = off + lfo
 						local note = sfx[flr(off)][1]
 						ch.freq = note_to_hz(note)
 					elseif ch.fx == 7 then
-						-- slow appreggio over 4 steps
+						-- slow arpeggio over 4 steps
 						local off = bit.band(flr(ch.offset), 0xfc)
 						local lfo = flr(ch.lfo(4) * 4)
 						off = off + lfo
 						local note = sfx[flr(off)][1]
 						ch.freq = note_to_hz(note)
 					end
-					ch.sample = ch.osc(ch.oscpos) * vol / 7
-					ch.oscpos = ch.oscpos + ch.freq / __sample_rate
-					ch.buffer:setSample(ch.bufferpos, ch.sample)
+					log("[ main:952 ]") -- debug
+					if ch.osc ~= nil then -- debug
+						ch.sample = ch.osc(ch.oscpos) * vol / 7
+						ch.oscpos = ch.oscpos + ch.freq / __sample_rate
+						ch.buffer:setSample(ch.bufferpos, ch.sample)
+					end -- debug
 				else
 					ch.buffer:setSample(ch.bufferpos, lerp(ch.sample or 0, 0, 0.1))
 					ch.sample = 0
@@ -1130,8 +1134,8 @@ function love.run()
 	local dt = 0
 
 	-- Main loop time.
-	-- while true do -- picolove
-	return function() -- gamax92
+	while true do -- picolove
+	--return function() -- gamax92
 		-- Process events.
 		if love.event then
 			love.graphics.setCanvas() -- TODO: Rework this

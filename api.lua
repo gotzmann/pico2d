@@ -1481,6 +1481,11 @@ function api.run()
 		pico8.cartdata[i] = 0
 	end
 
+	-- gotzmann DEBUG
+	log("======= :: ========")
+	log(loaded_code)
+	log("======= :: ========")
+
 	local ok, f, e = pcall(load, loaded_code, cartname)
 	if not ok or f == nil then
 		log("=======8<========")
