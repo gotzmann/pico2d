@@ -83,14 +83,18 @@ function cart.load_p8(filename)
 	for i = 0, 63 do
 		pico8.music[i] = {
 			loop = 0,
-			--[0] = 1,
-			--[1] = 2,
-			--[2] = 3,
-			--[3] = 4,
-			[0] = 65, -- gamax92
-			[1] = 66,
-			[2] = 67,
-			[3] = 68
+			-- [0] = 1, -- picolove
+			-- [1] = 2, -- picolove
+			-- [2] = 3, -- picolove
+			-- [3] = 4, -- picolove
+			-- [0] = 65, -- gamax92
+			-- [1] = 66,
+			-- [2] = 67,
+			-- [3] = 68
+			[0] = 1, -- picolove
+			[1] = 2, -- picolove
+			[2] = 3, -- picolove
+			[3] = 4, -- picolove
 		}
 	end
 
@@ -462,6 +466,13 @@ function cart.load_p8(filename)
 	lua = patch_lua(lua)
 	lua = lua .. "\n_picolove_end()"
 
+	-- debug
+	log("saving patched Lua to " .. cartname .. ".lua")
+	love.filesystem.write(cartname .. ".lua", lua)
+	--log("=======[ PATCH LUA ]========")
+	--log(lua)
+	--log("=======[ PATCH LUA ]========")
+	
 	log("finished loading cart", filename)
 
 	loaded_code = lua

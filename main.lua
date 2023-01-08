@@ -92,6 +92,7 @@ pico8 = {
 	quads = {},
 	spritesheet_data = nil,
 	spritesheet = nil,
+	sprite_mapping = 0x00, -- MEM HARDWARE STATE : 0x5f54
 }
 
 local flr, abs = math.floor, math.abs
@@ -406,8 +407,7 @@ function love.load(argv)
 
 	love.graphics.clear()
 	love.graphics.setDefaultFilter("nearest", "nearest")
-	pico8.screen =
-		love.graphics.newCanvas(pico8.resolution[1], pico8.resolution[2])
+	pico8.screen = love.graphics.newCanvas(pico8.resolution[1], pico8.resolution[2])
 	pico8.screen:setFilter("linear", "nearest")
 
 	local font = love.graphics.newImageFont("font.png", glyphs, 1)
@@ -1204,10 +1204,15 @@ function love.run()
 	end
 end
 
+-- TODO Need much more converters to support latest PICO8 improvements
+-- TODO Optimize for speed? No need for so many passes here
+-- https://gist.github.com/josefnpat/bfe4aaa5bbb44f572cd0
 function patch_lua(lua)
+
 	-- patch lua code
 	lua = lua:gsub("!=", "~=")
 	lua = lua:gsub("//", "--")
+
 	-- rewrite broken up while statements eg:
 	-- while fn
 	-- (0,0,
@@ -1217,6 +1222,7 @@ function patch_lua(lua)
 		a = a:gsub("%s*\n%s*", " ")
 		return "while " .. a .. " do"
 	end)
+
 	-- rewrite shorthand if statements eg. if (not b) i=1 j=2
 	lua = lua:gsub("if%s*(%b())%s*([^\n]*)\n", function(a, b)
 		local nl = a:find("\n", nil, true)
@@ -1233,12 +1239,25 @@ function patch_lua(lua)
 			end
 		end
 	end)
-	-- rewrite assignment operators
+
+	-- rewrite assignment operators -=*/%
+
+	-- FIXME Really awful results on strings :()
+	-- BEFORE: letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>&*=+#@$%"
+	-- AFTER: letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>& = letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>& * +#@$%"
+	
 	-- TODO: handle edge case "if x then i += 1 % 2 end" with % as +-*/%(^.:#)[
 	--lua = lua:gsub("([\n\r]%s*)(%a[%a%d]*)%s*([%+-%*/%%])=(%s*%S*)([^\n\r]*)", "%1%2 = %2 %3 (%4)%5")
 	--lua = lua:gsub("^(%s*)(%a[%a%d]*)%s*([%+-%*/%%])=(%s*%S*)([^\n\r]*)", "%1%2 = %2 %3 (%4)%5")
-	lua = lua:gsub("(%S+)%s*([%+-%*/%%])=", "%1 = %1 %2 ")
-	lua = lua:gsub("(%S+)%s*(%.%.)=", "%1 = %1 %2 ")
+	
+	-- older picolove
+	--lua = lua:gsub("(%S+)%s*([%+-%*/%%])=", "%1 = %1 %2 ")
+	--lua = lua:gsub("(%S+)%s*(%.%.)=", "%1 = %1 %2 ")
+
+	-- gotzmann
+	--lua = lua:gsub("(%S+)%s*([%+-%*/%%])=", "%1 = %1 %2")
+	lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*([%+-%*/%%])=", "%1 = %1 %2")
+	lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*(%.%.)=", "%1 = %1 %2 ")
 
 	--address operators (not ready yet - issues with strings)
 	--lua = lua:gsub("@%s*([^\n\r%s]*)", "peek(%1)")
