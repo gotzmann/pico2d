@@ -657,6 +657,7 @@ function api.spr(n, x, y, w, h, flip_x, flip_y)
 end
 
 function api.sspr(sx, sy, sw, sh, dx, dy, dw, dh, flip_x, flip_y)
+
 	-- Stretch rectangle from sprite sheet (sx, sy, sw, sh) // given in pixels
 	-- and draw in rectangle (dx, dy, dw, dh)
 	-- Color 0 drawn as transparent by default (see palt())
@@ -665,13 +666,33 @@ function api.sspr(sx, sy, sw, sh, dx, dy, dw, dh, flip_x, flip_y)
 	-- flip_y = true to flip vertically
 	dw = dw or sw
 	dh = dh or sh
+
 	-- FIXME: cache this quad
-	local q =
-		love.graphics.newQuad(sx, sy, sw, sh, pico8.spritesheet:getDimensions())
+	local q = love.graphics.newQuad(sx, sy, sw, sh, pico8.spritesheet:getDimensions())
 	love.graphics.setShader(pico8.sprite_shader)
 	pico8.sprite_shader:send("transparent", shdr_unpack(pico8.pal_transparent))
+
+	-- just for reference
+	-- pico8.spritesheet_data = love.image.newImageData(128, 128)
+	-- pico8.spritesheet = love.graphics.newImage(pico8.spritesheet_data)
+	-- pico8.screen = love.graphics.newCanvas(pico8.resolution[1], pico8.resolution[2])
+
+	-- FIXME Use pico8.sprite_mapping state !!!
+	-- TODO Optimize to copy only part of pico8.screen
+	local spritesheet = pico8.spritesheet
+	if pico8.sprite_mapping == 0x60 then
+		--log("=> spritesheet = pico8.screen") -- debug
+		-- The canvas must not be active when we call canvas:newImageData()
+		love.graphics.setCanvas()
+		--spritesheet = love.graphics.newImage(pico8.screen.newImageData())
+		--spritesheet = love.graphics.newImage(Canvas:newImageData(pico8.screen))
+		spritesheet = love.graphics.newImage(pico8.screen.newImageData(pico8.screen))
+		love.graphics.setCanvas(pico8.screen)
+	end
+
 	love.graphics.draw(
-		pico8.spritesheet,
+		-- pico8.spritesheet, -- gotzmann
+		spritesheet, -- gotzmann
 		q,
 		flr(dx) + (flip_x and dw or 0),
 		flr(dy) + (flip_y and dh or 0),
@@ -679,6 +700,7 @@ function api.sspr(sx, sy, sw, sh, dx, dy, dw, dh, flip_x, flip_y)
 		dw / sw * (flip_x and -1 or 1),
 		dh / sh * (flip_y and -1 or 1)
 	)
+
 	love.graphics.setShader(pico8.draw_shader)
 end
 
@@ -750,12 +772,14 @@ function api.circ(ox, oy, r, col)
 end
 
 function api.circfill(cx, cy, r, col)
-	if col then
+	-- if col then
 		color(col)
-	end
+	-- end -- debug
+
 	cx = flr(cx)
 	cy = flr(cy)
 	r = flr(r)
+
 	local x = r
 	local y = 0
 	local err = 1 - r
@@ -775,6 +799,7 @@ function api.circfill(cx, cy, r, col)
 		end
 		y = y + 1
 	end
+
 	if #lines > 0 then
 		for i = 1, #lines do
 			love.graphics.line(lines[i])
@@ -904,13 +929,23 @@ function api.pal(c0, c1, p)
 end
 
 function api.palt(c, t)
+
+	-- gotzmann
+	--if t == nil then
+		--log("t == nil") -- debug
+		--t = 0
+	--end
+
 	if type(c) ~= "number" then
+		--log("type(c) ~= number") -- debug
 		for i = 1, 16 do
-			pico8.pal_transparent[i] = i == 1 and 0 or 1
+			pico8.pal_transparent[i] = i == 1 and 0 or 1 -- FIXME WTF ??
 		end
 	else
 		c = flr(c) % 16
-		pico8.pal_transparent[c + 1] = t and 0 or 1
+		-- pico8.pal_transparent[c + 1] = t and 0 or 1 -- FIXME WTF ??
+		pico8.pal_transparent[c + 1] = t and 0 or 1 -- FIXME WTF ??
+		-- pico8.pal_transparent[c + 1] = t -- gotzmann
 	end
 	pico8.sprite_shader:send("transparent", shdr_unpack(pico8.pal_transparent))
 end
@@ -1189,10 +1224,13 @@ function api.peek(addr)
 end
 
 function api.poke(addr, val)
+
 	if tonumber(val) == nil then
 		return
 	end
+
 	addr, val = flr(tonumber(addr) or 0), flr(val) % 256
+
 	if addr < 0 or addr >= 0x8000 then
 		error("bad memory access")
 	elseif addr < 0x1000 then -- luacheck: ignore 542
@@ -1257,8 +1295,28 @@ function api.poke(addr, val)
 			else -- luacheck: ignore 542
 			end
 		end
+
 	elseif addr < 0x5f80 then -- luacheck: ignore 542
 		-- TODO: hardware state
+
+		-- 0x5f54 / 24404
+		
+		-- (0.2.4+) Controls the mapping of the sprite sheet, 
+		-- enabling the screen data to be used as the sheet 
+		-- to allow for certain special effects. 
+		-- The legal values are 0x00 for the 0x0000..0x1fff region, 
+		-- and 0x60 for the 0x6000..0x7fff region. 
+		-- Any other value is not officially supported; 
+		-- it will just be treated like 0x00.
+
+		if addr == 0x5f54 then
+			if val == 0x60 then
+				pico8.sprite_mapping = 0x60
+			else
+				pico8.sprite_mapping = 0x00	
+			end	
+		end	
+
 	elseif addr < 0x6000 then -- luacheck: ignore 542
 		-- TODO: gpio pins
 	elseif addr < 0x8000 then
@@ -1481,16 +1539,20 @@ function api.run()
 		pico8.cartdata[i] = 0
 	end
 
-	-- gotzmann DEBUG
-	--log("======= :: ========")
+	-- gotzmann DEBUG for NOCART.P8 !!!
+	--log("=======[ CART LUA ]========")
 	--log(loaded_code)
-	--log("======= :: ========")
+	--log("=======[ CART LUA ]========")
+	--log("")
+	--log("=======[ PATCH LUA ]========")
+	--log(patch_lua(loaded_code))
+	--log("=======[ PATCH LUA ]========")
 
 	local ok, f, e = pcall(load, loaded_code, cartname)
 	if not ok or f == nil then
-		log("=======[ 8< ]========")
-		log(loaded_code)
-		log("=======[ >8 ]========")
+		--log("=======[ 8< ]========")
+		--log(loaded_code)
+		--log("=======[ >8 ]========")
 		error("Error loading lua: " .. tostring(e))
 	else
 		setfenv(f, pico8.cart)
