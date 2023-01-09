@@ -410,7 +410,12 @@ function love.load(argv)
 	pico8.screen = love.graphics.newCanvas(pico8.resolution[1], pico8.resolution[2])
 	pico8.screen:setFilter("linear", "nearest")
 
-	local font = love.graphics.newImageFont("font.png", glyphs, 1)
+	-- gotzmann
+	-- https://fonts-online.ru/fonts/pico-8
+	-- TODO Allow both PNG (monospaced + AS IS) and TTF (more aligned + UPPERCASE) to be used
+	-- https://love2d.org/wiki/Tutorial:Fonts_and_Text
+	--local font = love.graphics.newImageFont("font.png", glyphs, 1) -- picolove
+	local font = love.graphics.newFont("pico-8.ttf", 4) -- gotzmann
 	love.graphics.setFont(font)
 	font:setFilter("nearest", "nearest")
 
@@ -950,11 +955,12 @@ local function update_audio(time)
 						local note = sfx[flr(off)][1]
 						ch.freq = note_to_hz(note)
 					end
-					log("[ main:952 ]") -- debug
 					if ch.osc ~= nil then -- debug
 						ch.sample = ch.osc(ch.oscpos) * vol / 7
 						ch.oscpos = ch.oscpos + ch.freq / __sample_rate
 						ch.buffer:setSample(ch.bufferpos, ch.sample)
+					else
+						--log("[ main:952 ]") -- debug	
 					end -- debug
 				else
 					ch.buffer:setSample(ch.bufferpos, lerp(ch.sample or 0, 0, 0.1))
@@ -1209,6 +1215,34 @@ end
 -- https://gist.github.com/josefnpat/bfe4aaa5bbb44f572cd0
 function patch_lua(lua)
 
+	-- gotzmann
+	-- TODO Allow graphics chars within PRINT statements
+	-- https://pico-8.fandom.com/wiki/Btn
+--[[
+	lua = lua:gsub("⬅️", "0")
+	lua = lua:gsub("➡️", "1")
+	lua = lua:gsub("⬆️", "2")
+	lua = lua:gsub("⬇️", "3")
+	lua = lua:gsub("🅾️", "4")
+	lua = lua:gsub("❎", "5")
+]]
+	lua = lua:gsub("btn%(⬅️%)", "btn(0)")
+	lua = lua:gsub("btn%(➡️%)", "btn(1)")
+	lua = lua:gsub("btn%(⬆️%)", "btn(2)")
+	lua = lua:gsub("btn%(⬇️%)", "btn(3)")
+	lua = lua:gsub("btn%(🅾️%)", "btn(4)")
+	lua = lua:gsub("btn%(❎%)", "btn(5)")
+
+	lua = lua:gsub("btnp%(⬅️%)", "btnp(0)")
+	lua = lua:gsub("btnp%(➡️%)", "btnp(1)")
+	lua = lua:gsub("btnp%(⬆️%)", "btnp(2)")
+	lua = lua:gsub("btnp%(⬇️%)", "btnp(3)")
+	lua = lua:gsub("btnp%(🅾️%)", "btnp(4)")
+	lua = lua:gsub("btnp%(❎%)", "btnp(5)")
+
+	--log("=======[ KEYS ]========")
+	--log(lua)
+
 	-- patch lua code
 	lua = lua:gsub("!=", "~=")
 	lua = lua:gsub("//", "--")
@@ -1239,9 +1273,9 @@ function patch_lua(lua)
 		if b == "do" then return nil end
 
 		--log("=======[ WHILE RESULT ]========")
-		--log("while(" .. a .. ") do " .. b .. " end")
+		--log("while " .. a .. " do " .. b .. " end")
 		--log("=======[ WHILE END ]========")
-		
+
 		return "while(" .. a .. ") do " .. b .. " end"
 	end)
 
@@ -1249,19 +1283,25 @@ function patch_lua(lua)
 	lua = lua:gsub("if%s*(%b())%s*([^\n]*)\n", function(a, b)
 
 		-- debug
-		--log(" if a = " .. a)
-		--log(" if b = " .. b)
+		--log("=======[ IF START ]========")
+		--log("a = ", a)
+		--log("b = ", b)
 
 		local nl = a:find("\n", nil, true)
 		local th = b:find("%f[%w]then%f[%W]")
 		local an = b:find("%f[%w]and%f[%W]")
 		local o = b:find("%f[%w]or%f[%W]")
 		local ce = b:find("--", nil, true)
+
 		if not (nl or th or an or o) then
 			if ce then
 				local c, t = b:match("(.-)(%s-%-%-.*)")
+				--log("=======[ IF RESULT LONG ]========")
+				--log("if " .. a:sub(2, -2) .. " then " .. c .. " end" .. t .. "\n")
 				return "if " .. a:sub(2, -2) .. " then " .. c .. " end" .. t .. "\n"
 			else
+				--log("=======[ IF RESULT SHORT ]========")
+				--log("if " .. a:sub(2, -2) .. " then " .. b .. " end\n")
 				return "if " .. a:sub(2, -2) .. " then " .. b .. " end\n"
 			end
 		end

@@ -281,6 +281,17 @@ function _draw()
 		rectfill((cursorx + 2) * 4, _getcursory(), (cursorx + 2) * 4 + 3, _getcursory() + 4, 8)
 	end
 end
+--[[
+-- IF debug
+
+if (not b) i=1 j=2
+
+-- KEYS debug
+
+if (btn(🅾️) or btn(❎)) then
+--if (btn(⬇️)) then
+ print("🅾️ mush  ❎ jump  ⬅️/➡️ turn", 0,150,13)
+ ]]
 
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000307777777777770300000000000000000000000000000000

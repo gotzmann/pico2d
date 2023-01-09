@@ -443,6 +443,10 @@ local function tostring(str)
 	--return (tostring_org(str):gsub("[^%z\32-\127]", "8"))
 end
 
+-- gotzmann
+-- TODO Seems we should revert the chars height to accomodate 
+-- latest PICO-8 logic of printing something like this:
+-- print("♥p8 aDVENT cALENDAR 2020",4,120,11)
 function api.print(...)
 	--TODO: support printing special pico8 chars
 
@@ -487,6 +491,13 @@ function api.print(...)
 	end
 	local to_print = tostring(api.tostr(str))
 	love.graphics.setShader(pico8.text_shader)
+
+	-- gotzmann
+	--love.graphics.print(to_print, flr(x), flr(y)) -- picolove
+	if type(to_print) == "string" then
+		--log("== to_print == ", to_print)
+		to_print = to_print.upper(to_print) -- WTF
+	end	
 	love.graphics.print(to_print, flr(x), flr(y))
 end
 
@@ -887,6 +898,12 @@ function api.line(x0, y0, x1, y1, col)
 	end
 	love.graphics.points(points)
 end
+
+-- gotzmann
+-- TODO https://pico-8.fandom.com/wiki/Tline
+function api.tline(x0, y0, x1, y1, mx, my, mdx, mdy)
+	api.line(x0, y0, x1, y1)
+end	
 
 local __palette_modified = true
 
@@ -1696,6 +1713,10 @@ function api.btn(i, p)
 end
 
 function api.btnp(i, p)
+
+	-- debug
+	log("api.btnp", i, p)
+
 	if type(i) == "number" then
 		p = p or 0
 		if pico8.keymap[p] and pico8.keymap[p][i] then
