@@ -1213,18 +1213,45 @@ function patch_lua(lua)
 	lua = lua:gsub("!=", "~=")
 	lua = lua:gsub("//", "--")
 
+
+	-- gotzmann Why do wee need this?
 	-- rewrite broken up while statements eg:
 	-- while fn
 	-- (0,0,
 	-- 0,0) do
 	-- end
-	lua = lua:gsub("while%s*(.-)%s*do", function(a)
-		a = a:gsub("%s*\n%s*", " ")
-		return "while " .. a .. " do"
+	-- lua = lua:gsub("while%s*(.-)%s*do", function(a)
+	-- a = a:gsub("%s*\n%s*", " ")
+	-- return "while " .. a .. " do"
+	-- end)
+
+
+	-- rewrite open one-string loops
+	-- lua = lua:gsub("while%s*(.-)%s*do", function(a) -- picolove
+	--lua = lua:gsub("while%s*%((.-)%)%s*(.*)%s*", function(a, b)
+	lua = lua:gsub("while%s*%((.-)%)%s*([%a%d =#%(%)%[%]%.%+%-%*/\\\"\']+)", function(a, b)
+
+		-- debug
+		--log("=======[ WHILE START ]========")
+		--log("a = ", a)
+		--log("b = ", b)
+
+		if b == "do" then return nil end
+
+		--log("=======[ WHILE RESULT ]========")
+		--log("while(" .. a .. ") do " .. b .. " end")
+		--log("=======[ WHILE END ]========")
+		
+		return "while(" .. a .. ") do " .. b .. " end"
 	end)
 
 	-- rewrite shorthand if statements eg. if (not b) i=1 j=2
 	lua = lua:gsub("if%s*(%b())%s*([^\n]*)\n", function(a, b)
+
+		-- debug
+		--log(" if a = " .. a)
+		--log(" if b = " .. b)
+
 		local nl = a:find("\n", nil, true)
 		local th = b:find("%f[%w]then%f[%W]")
 		local an = b:find("%f[%w]and%f[%W]")
@@ -1240,7 +1267,7 @@ function patch_lua(lua)
 		end
 	end)
 
-	-- rewrite assignment operators -=*/%
+	-- rewrite assignment operators -+*/% and .. 
 
 	-- FIXME Really awful results on strings :()
 	-- BEFORE: letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>&*=+#@$%"
@@ -1256,8 +1283,14 @@ function patch_lua(lua)
 
 	-- gotzmann
 	--lua = lua:gsub("(%S+)%s*([%+-%*/%%])=", "%1 = %1 %2")
-	lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*([%+-%*/%%])=", "%1 = %1 %2")
+	lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*([%+-%*/%%\\])=", "%1 = %1 %2")
 	lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*(%.%.)=", "%1 = %1 %2 ")
+
+	-- gotzmann
+	-- integer division - simplified version for only simple named vars division with integers
+	-- TODO complex scenarios involving tables and expressions with ()
+	lua = lua:gsub("%(([%a%d_%.%+-%*/%%]+)%)%s*(\\)%s*(%d+)", "flr(%1 / %3)") -- FIXME IT WRONG with ()
+	lua = lua:gsub("([%a%d_%.]+)%s*(\\)%s*(%d+)", "flr(%1 / %3)")
 
 	--address operators (not ready yet - issues with strings)
 	--lua = lua:gsub("@%s*([^\n\r%s]*)", "peek(%1)")
