@@ -1712,6 +1712,7 @@ function api.btn(i, p)
 	end
 end
 
+-- i == key and p == player
 function api.btnp(i, p)
 
 	-- debug
@@ -1719,12 +1720,19 @@ function api.btnp(i, p)
 
 	if type(i) == "number" then
 		p = p or 0
+
+		log("api.btnp", i, p) -- debug
+
 		if pico8.keymap[p] and pico8.keymap[p][i] then
 			local v = pico8.keypressed[p][i]
+			-- debug
+			log("api.btnp V = ", v)
 			if v and (v == 0 or (v >= 12 and v % 4 == 0)) then
+				log("api.btnp TRUE") -- debug
 				return true
 			end
 		end
+		log("api.btnp FALSE") -- debug
 		return false
 	else
 		-- return bitfield of buttons

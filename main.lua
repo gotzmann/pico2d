@@ -54,6 +54,9 @@ pico8 = {
 		[1] = {},
 	},
 	kbdbuffer={},
+
+	-- gotzmann
+	--[[
 	keymap = {
 		[0] = {
 			[0] = { "left", "kp4" },
@@ -63,6 +66,28 @@ pico8 = {
 			[4] = { "z", "c", "n", "kp-", "kp1", "insert" },
 			[5] = { "x", "v", "m", "8", "kp2", "delete" },
 			[6] = { "return", "escape" },
+			[7] = {},
+		},
+		[1] = {
+			[0] = { "s" },
+			[1] = { "f" },
+			[2] = { "e" },
+			[3] = { "d" },
+			[4] = { "tab", "lshift", "w" },
+			[5] = { "q", "a" },
+			[6] = {},
+			[7] = {},
+		},
+	}, ]]
+	keymap = {
+		[0] = {
+			[0] = { 0, "left", "kp4" },
+			[1] = { 1, "right", "kp6" },
+			[2] = { 2, "up", "kp8" },
+			[3] = { 3, "down", "kp5" },
+			[4] = { 4, "z", "c", "n", "kp-", "kp1", "insert" },
+			[5] = { 5, "x", "v", "m", "8", "kp2", "delete" },
+			[6] = { 6, "return", "escape" },
 			[7] = {},
 		},
 		[1] = {
@@ -701,6 +726,7 @@ local function inside(x, y, x0, y0, w, h) -- luacheck: no unused
 end
 
 local function update_buttons()
+	--log(".. update_buttons()") -- debug
 	for p = 0, 1 do
 		for i = 0, #pico8.keymap[p] do
 			for _, _ in pairs(pico8.keymap[p][i]) do
@@ -715,7 +741,10 @@ local function update_buttons()
 	end
 end
 
+-- gotzmann
+-- TODO
 function love.update(_)
+	log(".. love.update(_)") -- debug
 	update_buttons()
 	if pico8.cart._update60 then
 		pico8.cart._update60()
@@ -993,6 +1022,10 @@ local function isAltDown()
 end
 
 function love.keypressed(key)
+
+	-- debug
+	log("== love.keypressed == ", key)
+
 	if key == "r" and isCtrlOrGuiDown() and not isAltDown() then
 		api.reload()
 		api.run()
