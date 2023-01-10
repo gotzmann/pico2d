@@ -1503,11 +1503,12 @@ api.band = bit.band
 api.bor = bit.bor
 api.bxor = bit.bxor
 api.bnot = bit.bnot
-api.shl = bit.lshift
+api.shl = bit.lshift -- x << y ?
 api.shr = bit.rshift
 
 -- FIXME Do we need 3 more bit shifts functions from gamax92?
 
+-- x >>> y ?
 function api.lshr(x, y)
 	return bit.rshift(x*0x10000, y)/0x10000
 end

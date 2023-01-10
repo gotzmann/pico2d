@@ -1276,6 +1276,14 @@ function patch_lua(lua)
 	--log("=======[ KEYS ]========")
 	--log(lua)
 
+	--gotzmann
+	--split double asignments like: y^^=x<<16|y>>>16 x^^=y<<16|x>>>16
+
+	--[%a%d_%.%[%]%'%\"]+
+	--lua = lua:gsub("([\r\n])([%a%d_%.%[%]%'%\"]+)=([%a%d_%.%[%]%'%\"]+)%s+([%a%d_%.%[%]%'%\"]+)=([%a%d_%.%[%]%'%\"]+)([\r\n])", "%2=%3\n%4=%5\n") -- x | y
+	--log("=======[ SPLIT ]========")
+	--log(lua)
+
 	-- patch lua code
 	lua = lua:gsub("!=", "~=")
 	lua = lua:gsub("//", "--")
@@ -1358,6 +1366,37 @@ function patch_lua(lua)
 	--lua = lua:gsub("(%S+)%s*([%+-%*/%%])=", "%1 = %1 %2")
 	lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*([%+-%*/%%\\])=", "%1 = %1 %2")
 	lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*(%.%.)=", "%1 = %1 %2 ")
+
+	-- gotzmann 
+	-- https://pico-8.fandom.com/wiki/Lua#Bitwise_operators
+
+	--lua = lua:gsub("(.-)=(.-)|(.-)([\r\n])", "%1=bor(%2,%3)\n") -- x | y
+	--log("=======[ BOR ]========")
+	--log(lua)
+
+	--lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*<<%s*(%d+)", " shl(%1,%2) ") -- x<<16
+	--lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*>>>%s*(%d+)", " lshr(%1,%2) ") -- x<<16
+	--lua = lua:gsub("=%s*([%a%d_%.%[%]%'%\",%(%)]+)%s*|%s*([%a%d_%.%[%]%'%\",%(%)]+)", " lshr(%1, %2) ") -- x | y
+
+	-- gotzmann ^^=
+	--lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*(^^)=", "%1 = %1 %2")
+
+	--log("=======[ BITS ]========")
+	--log(lua)
+
+	--y = y ^^ shl(x, 16) | lshr(y, 16)
+	--x = x ^^ shl(y, 16) | lshr(x, 16)
+	--y = y ^^  shl(x, 16)  | lshr(y, 16)
+	--x = x ^^  shl(y, 16)  |  lshr(x, 16)
+
+	-- y = y ^^ shl(x, 16) ,  lshr(y, 16) )
+	-- x = bor( x ^^ shl(y, 16) ,  lshr(x, 16) )
+	-- y = bor( y ^^  shl(x, 16)  ,  lshr(y, 16)  )
+	-- x = bor( x ^^  shl(y, 16)  ,   lshr(x, 16) )
+
+	--lua = lua:gsub("(.-)=(.-)|(.-)([\r\n])", "%1=bor(%2,%3)\n") -- x | y
+	--log("=======[ BOR ]========")
+	--log(lua)
 
 	-- gotzmann
 	-- integer division - simplified version for only simple named vars division with integers
