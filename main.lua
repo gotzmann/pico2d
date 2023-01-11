@@ -744,7 +744,7 @@ end
 -- gotzmann
 -- TODO
 function love.update(_)
-	log(".. love.update(_)") -- debug
+	--") -- debug
 	update_buttons()
 	if pico8.cart._update60 then
 		pico8.cart._update60()
@@ -1243,10 +1243,25 @@ function love.run()
 	end
 end
 
+function lines(s)
+	if s:sub(-1)~="\n" then s=s.."\n" end
+	return s:gmatch("(.-)\n")
+end
+
+local var_mask = "([%a%d_%.%[%]%'\"]+)"
+--local equal_mask = "([=|%+=|%-=|%*=|/=|%%=|\\=|^^=|%.%.=])"
+--local equal_mask = "(%+%-%*/%%\\^%.)?="
+local equal_mask = "([%+%-%*/%%\\^%.]?[^%.]?=)" -- all compund equals | ^^= | ..=
+local compaund_mask = "([%+%-%*/%%\\^%.]+[^%.]?)=" -- all compund equals | ^^= | ..= 
+local expr_mask = "([%a%d_%.%[%]%'\"%(%)<>%|&%+%-%*%/\\,#^]+)"
+
 -- TODO Need much more converters to support latest PICO8 improvements
 -- TODO Optimize for speed? No need for so many passes here
 -- https://gist.github.com/josefnpat/bfe4aaa5bbb44f572cd0
 function patch_lua(lua)
+
+	-- sane defaults
+	lua = lua:gsub("\r\n", "\n")
 
 	-- gotzmann
 	-- TODO Allow graphics chars within PRINT statements
@@ -1281,6 +1296,15 @@ function patch_lua(lua)
 
 	--[%a%d_%.%[%]%'%\"]+
 	--lua = lua:gsub("([\r\n])([%a%d_%.%[%]%'%\"]+)=([%a%d_%.%[%]%'%\"]+)%s+([%a%d_%.%[%]%'%\"]+)=([%a%d_%.%[%]%'%\"]+)([\r\n])", "%2=%3\n%4=%5\n") -- x | y
+	
+	local patched = ""
+	for line in lines(lua) do
+		line = line:gsub(var_mask .. equal_mask .. expr_mask .. "%s+" .. var_mask .. equal_mask .. expr_mask, "%1%2%3\n%4%5%6") 
+		patched = patched .. line .. "\n"
+	end
+
+	lua = patched
+	
 	--log("=======[ SPLIT ]========")
 	--log(lua)
 
@@ -1348,61 +1372,55 @@ function patch_lua(lua)
 		end
 	end)
 
-	-- rewrite assignment operators -+*/% and .. 
-
+	-- rewrite assignment operators -+*/% | ..= | ^^=
 	-- FIXME Really awful results on strings :()
 	-- BEFORE: letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>&*=+#@$%"
 	-- AFTER: letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>& = letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>& * +#@$%"
+	--lua = lua:gsub(var_mask .. "(%s*)" .. compaund_mask .. "(%s*)" .. expr_mask, "%1=%1%3(%5)")
+	--log("=======[ EQUALS 1 ]========")
+	--log(lua)
+
 	
 	-- TODO: handle edge case "if x then i += 1 % 2 end" with % as +-*/%(^.:#)[
 	--lua = lua:gsub("([\n\r]%s*)(%a[%a%d]*)%s*([%+-%*/%%])=(%s*%S*)([^\n\r]*)", "%1%2 = %2 %3 (%4)%5")
 	--lua = lua:gsub("^(%s*)(%a[%a%d]*)%s*([%+-%*/%%])=(%s*%S*)([^\n\r]*)", "%1%2 = %2 %3 (%4)%5")
-	
-	-- older picolove
-	--lua = lua:gsub("(%S+)%s*([%+-%*/%%])=", "%1 = %1 %2 ")
-	--lua = lua:gsub("(%S+)%s*(%.%.)=", "%1 = %1 %2 ")
-
-	-- gotzmann
-	--lua = lua:gsub("(%S+)%s*([%+-%*/%%])=", "%1 = %1 %2")
-	lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*([%+-%*/%%\\])=", "%1 = %1 %2")
-	lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*(%.%.)=", "%1 = %1 %2 ")
 
 	-- gotzmann 
 	-- https://pico-8.fandom.com/wiki/Lua#Bitwise_operators
 
+	--lua = lua:gsub(var_mask .. "%s*" .. equal_mask .. "%s*" .. expr_mask .. "%s*|%s*" .. expr_mask, "%1%2bor(%3,%4)") -- x | y
+	--log("=======[ BOR ]========")
+	--log(lua)
+
+	lua = lua:gsub(var_mask .. "%s*<<%s*(%d+)", "shl(%1,%2)") -- x<<16
+	lua = lua:gsub(var_mask .. "%s*>>>%s*(%d+)", "lshr(%1,%2)") -- x<<16
+
+	lua = lua:gsub(expr_mask .. "%s*|%s*" .. expr_mask, "bor(%1,%2)") -- x | y
+
+	log("=======[ BITS ]========")
+	log(lua)
+
 	--lua = lua:gsub("(.-)=(.-)|(.-)([\r\n])", "%1=bor(%2,%3)\n") -- x | y
 	--log("=======[ BOR ]========")
 	--log(lua)
 
-	--lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*<<%s*(%d+)", " shl(%1,%2) ") -- x<<16
-	--lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*>>>%s*(%d+)", " lshr(%1,%2) ") -- x<<16
-	--lua = lua:gsub("=%s*([%a%d_%.%[%]%'%\",%(%)]+)%s*|%s*([%a%d_%.%[%]%'%\",%(%)]+)", " lshr(%1, %2) ") -- x | y
+		-- rewrite assignment operators -+*/% | ..= | ^^=
+	-- FIXME Really awful results on strings :()
+	-- BEFORE: letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>&*=+#@$%"
+	-- AFTER: letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>& = letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>& * +#@$%"
+	lua = lua:gsub(var_mask .. "(%s*)" .. compaund_mask .. "(%s*)" .. expr_mask, "%1=%1%3(%5)")
+	log("=======[ EQUALS 2 ]========")
+	log(lua)
 
-	-- gotzmann ^^=
-	--lua = lua:gsub("([%a%d_%.%[%]%'%\"]+)%s*(^^)=", "%1 = %1 %2")
-
-	--log("=======[ BITS ]========")
-	--log(lua)
-
-	--y = y ^^ shl(x, 16) | lshr(y, 16)
-	--x = x ^^ shl(y, 16) | lshr(x, 16)
-	--y = y ^^  shl(x, 16)  | lshr(y, 16)
-	--x = x ^^  shl(y, 16)  |  lshr(x, 16)
-
-	-- y = y ^^ shl(x, 16) ,  lshr(y, 16) )
-	-- x = bor( x ^^ shl(y, 16) ,  lshr(x, 16) )
-	-- y = bor( y ^^  shl(x, 16)  ,  lshr(y, 16)  )
-	-- x = bor( x ^^  shl(y, 16)  ,   lshr(x, 16) )
-
-	--lua = lua:gsub("(.-)=(.-)|(.-)([\r\n])", "%1=bor(%2,%3)\n") -- x | y
-	--log("=======[ BOR ]========")
-	--log(lua)
+	lua = lua:gsub(var_mask .. "%s*^^%s*" .. expr_mask, "bxor(%1,%2)") -- x^^16
+	log("=======[ BITS 2 ]========")
+	log(lua)
 
 	-- gotzmann
 	-- integer division - simplified version for only simple named vars division with integers
 	-- TODO complex scenarios involving tables and expressions with ()
-	lua = lua:gsub("%(([%a%d_%.%+-%*/%%]+)%)%s*(\\)%s*(%d+)", "flr(%1 / %3)") -- FIXME IT WRONG with ()
-	lua = lua:gsub("([%a%d_%.]+)%s*(\\)%s*(%d+)", "flr(%1 / %3)")
+	lua = lua:gsub("%(([%a%d_%.%+-%*/%%]+)%)%s*(\\)%s*(%d+)", "flr(%1/%3)") -- FIXME IT WRONG with ()
+	lua = lua:gsub("([%a%d_%.]+)%s*(\\)%s*(%d+)", "flr(%1/%3)")
 
 	--address operators (not ready yet - issues with strings)
 	--lua = lua:gsub("@%s*([^\n\r%s]*)", "peek(%1)")
