@@ -1692,12 +1692,12 @@ end
 function api.btn(key, player)
 
 	-- debug
-	log("api.btn", key, player)
+	--log("api.btn", key, player)
 
 	if type(key) == "number" then
 		player = player or 0
 		if pico8.keymap[player] and pico8.keymap[player][key] then
-			return pico8.keypressed[player]keyi] ~= nil
+			return pico8.keypressed[player][key] ~= nil
 		end
 		return false
 	else
@@ -1724,9 +1724,10 @@ end
 function api.btnp(key, player)
 
 	-- debug
-	log("api.btnp", key, player)
+	--log("api.btnp", key, player)
 
 	-- gotzmann
+	-- allow normal event loop processing if there infinite game loop with just btnp() inside
 	if love.event then
 		--log("== love.event")
 		-- love.event.pump cannot be called while a Canvas is active in love.graphics.
@@ -1751,14 +1752,22 @@ function api.btnp(key, player)
 
 		if pico8.keymap[player] and pico8.keymap[player][key] then
 			local v = pico8.keypressed[player][key]
+
+			--gotzmann
+			--log("api.btnp V = ", v)
+			if v == -1 then
+				pico8.keypressed[player][key] = nil
+				return true
+			end
+
 			-- debug
 			--log("api.btnp V = ", v)
 			--log("api.btnp TRUE -- 1") -- debug
 			-- debug WTF
-			if v and (v == 0 or (v >= 12 and v % 4 == 0)) then
-				log("api.btnp TRUE -- 2") -- debug
-				return true
-			end
+			--if v and (v == 0 or (v >= 12 and v % 4 == 0)) then
+			--	log("api.btnp TRUE -- 2") -- debug
+			--	return true
+			--end
 		end
 		--log("api.btnp FALSE") -- debug
 		return false

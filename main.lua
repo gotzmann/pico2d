@@ -1027,7 +1027,7 @@ end
 function love.keypressed(key)
 
 	-- debug
-	log("== love.keypressed == ", key)
+	--log("== love.keypressed == ", key)
 
 	if key == "r" and isCtrlOrGuiDown() and not isAltDown() then
 		api.reload()
@@ -1080,7 +1080,7 @@ function love.keypressed(key)
 				for _, testkey in pairs(pico8.keymap[p][i]) do
 					if key == testkey then
 						pico8.keypressed[p][i] = -1 -- becomes 0 on the next frame
-						log("pico8.keypressed[p][i] = -1") -- debug
+						--log("pico8.keypressed[p][i] = -1") -- debug
 						break
 					end
 				end
@@ -1398,10 +1398,31 @@ function patch_lua(lua)
 	--log("=======[ BOR ]========")
 	--log(lua)
 
-	lua = lua:gsub(var_mask .. "%s*<<%s*(%d+)", "shl(%1,%2)") -- x<<16
-	lua = lua:gsub(var_mask .. "%s*>>>%s*(%d+)", "lshr(%1,%2)") -- x<<16
+	local patched = ""
+	for line in lines(lua) do
+		
+		line = line:gsub(var_mask .. "%s*<<%s*(%d+)", "shl(%1,%2)") -- x<<16
+		--patched = patched .. line .. "\n"
+		
+		line = line:gsub(var_mask .. "%s*>>>%s*(%d+)", "lshr(%1,%2)") -- x<<16
+		--line = line:gsub(var_mask .. equal_mask .. expr_mask .. "%s+" .. var_mask .. equal_mask .. expr_mask, "%1%2%3\n%4%5%6") 
+		--patched = patched .. line .. "\n"
 
-	lua = lua:gsub(expr_mask .. "%s*|%s*" .. expr_mask, "bor(%1,%2)") -- x | y
+		-- insert BOR only if the | sign is not a part of string limited with quotes 
+		local _, borCount = string.gsub(line, "|", "|")
+		local borPos = string.find(line, "|")
+		local _, quotesBefore = string.gsub(string.sub(line, 1, borPos), "\"", "\"")
+		
+		if borCount == 1 and borPos and quotesBefore % 2 == 0 then 
+			log("borPos =, substr = ", borPos, string.sub(line, 1, borPos)) 
+			line = line:gsub(expr_mask .. "%s*|%s*" .. expr_mask, "bor(%1,%2)") -- x | y
+			
+		end
+		
+		patched = patched .. line .. "\n"
+	end
+
+	lua = patched
 
 	log("=======[ BITS ]========")
 	log(lua)
@@ -1417,12 +1438,12 @@ function patch_lua(lua)
 	--lua = lua:gsub(var_mask .. "(%s*)" .. compaund_mask .. "(%s*)" .. expr_mask, "%1=%1%3(%5)")
 	lua = lua:gsub(var_mask .. "(%s*)" .. compaund_mask .. "(%s*)" .. expr_mask, "%1=%1%3%5")
 	lua = lua:gsub(var_mask .. "(%s*)" .. double_compaund_mask .. "(%s*)" .. expr_mask, "%1=%1%3%5")
-	log("=======[ EQUALS 2 ]========")
-	log(lua)
+	--log("=======[ EQUALS 2 ]========")
+	--log(lua)
 
 	lua = lua:gsub(var_mask .. "%s*^^%s*" .. expr_mask, "bxor(%1,%2)") -- x^^16
-	log("=======[ BITS 2 ]========")
-	log(lua)
+	--log("=======[ BITS 2 ]========")
+	--log(lua)
 
 	-- gotzmann
 	-- integer division - simplified version for only simple named vars division with integers
