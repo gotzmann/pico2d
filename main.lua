@@ -56,7 +56,7 @@ pico8 = {
 	kbdbuffer={},
 
 	-- gotzmann
-	--[[
+	
 	keymap = {
 		[0] = {
 			[0] = { "left", "kp4" },
@@ -78,7 +78,9 @@ pico8 = {
 			[6] = {},
 			[7] = {},
 		},
-	}, ]]
+	}, 
+	
+	--[[
 	keymap = {
 		[0] = {
 			[0] = { 0, "left", "kp4" },
@@ -100,7 +102,8 @@ pico8 = {
 			[6] = {},
 			[7] = {},
 		},
-	},
+	}, ]]
+
 	mwheel = 0,
 	cursor = { 0, 0 },
 	camera_x = 0,
@@ -1077,6 +1080,7 @@ function love.keypressed(key)
 				for _, testkey in pairs(pico8.keymap[p][i]) do
 					if key == testkey then
 						pico8.keypressed[p][i] = -1 -- becomes 0 on the next frame
+						log("pico8.keypressed[p][i] = -1") -- debug
 						break
 					end
 				end
@@ -1252,7 +1256,9 @@ local var_mask = "([%a%d_%.%[%]%'\"]+)"
 --local equal_mask = "([=|%+=|%-=|%*=|/=|%%=|\\=|^^=|%.%.=])"
 --local equal_mask = "(%+%-%*/%%\\^%.)?="
 local equal_mask = "([%+%-%*/%%\\^%.]?[^%.]?=)" -- all compund equals | ^^= | ..=
-local compaund_mask = "([%+%-%*/%%\\^%.]+[^%.]?)=" -- all compund equals | ^^= | ..= 
+--local compaund_mask = "([%+%-%*/%%\\^%.]+[^%.]?)=" -- all compund equals | ^^= | ..=
+local compaund_mask = "([%+%-%*/%%\\]+)=" -- all compund equals
+local double_compaund_mask = "([%.^][%.^])=" -- ^^= | ..= 
 local expr_mask = "([%a%d_%.%[%]%'\"%(%)<>%|&%+%-%*%/\\,#^]+)"
 
 -- TODO Need much more converters to support latest PICO8 improvements
@@ -1408,7 +1414,9 @@ function patch_lua(lua)
 	-- FIXME Really awful results on strings :()
 	-- BEFORE: letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>&*=+#@$%"
 	-- AFTER: letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>& = letsg="abcdefghijklmnopqrstuvwxyz0123456789?()[]{}<>& * +#@$%"
-	lua = lua:gsub(var_mask .. "(%s*)" .. compaund_mask .. "(%s*)" .. expr_mask, "%1=%1%3(%5)")
+	--lua = lua:gsub(var_mask .. "(%s*)" .. compaund_mask .. "(%s*)" .. expr_mask, "%1=%1%3(%5)")
+	lua = lua:gsub(var_mask .. "(%s*)" .. compaund_mask .. "(%s*)" .. expr_mask, "%1=%1%3%5")
+	lua = lua:gsub(var_mask .. "(%s*)" .. double_compaund_mask .. "(%s*)" .. expr_mask, "%1=%1%3%5")
 	log("=======[ EQUALS 2 ]========")
 	log(lua)
 

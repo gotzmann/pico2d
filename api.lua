@@ -1689,11 +1689,15 @@ function api.radio()
 	return nil, 0
 end
 
-function api.btn(i, p)
-	if type(i) == "number" then
-		p = p or 0
-		if pico8.keymap[p] and pico8.keymap[p][i] then
-			return pico8.keypressed[p][i] ~= nil
+function api.btn(key, player)
+
+	-- debug
+	log("api.btn", key, player)
+
+	if type(key) == "number" then
+		player = player or 0
+		if pico8.keymap[player] and pico8.keymap[player][key] then
+			return pico8.keypressed[player]keyi] ~= nil
 		end
 		return false
 	else
@@ -1714,26 +1718,49 @@ function api.btn(i, p)
 end
 
 -- i == key and p == player
-function api.btnp(i, p)
+-- If you keep holding down the button, btnp() will register again 15 frames later, 
+-- and then if it's kept held down, it will keep registering in 4 frame increments 
+-- until it is let up again.
+function api.btnp(key, player)
 
 	-- debug
-	log("api.btnp", i, p)
+	log("api.btnp", key, player)
 
-	if type(i) == "number" then
-		p = p or 0
+	-- gotzmann
+	if love.event then
+		--log("== love.event")
+		-- love.event.pump cannot be called while a Canvas is active in love.graphics.
+		love.graphics.setCanvas()
+		love.event.pump()
+		for name, a,b,c,d,e,f in love.event.poll() do
+			--if name == "quit" then
+			--	if not love.quit or not love.quit() then
+			--		return a or 0
+			--	end
+			--end
+			love.handlers[name](a,b,c,d,e,f)
+		end
+		love.graphics.setCanvas(pico8.screen)
+	end	
 
-		log("api.btnp", i, p) -- debug
+	if type(key) == "number" then
+		player = player or 0
 
-		if pico8.keymap[p] and pico8.keymap[p][i] then
-			local v = pico8.keypressed[p][i]
+		--log("api.btnp", i, p) -- debug
+		--log("pico8.keymap[p][i] = ", pico8.keymap[p][i])
+
+		if pico8.keymap[player] and pico8.keymap[player][key] then
+			local v = pico8.keypressed[player][key]
 			-- debug
-			log("api.btnp V = ", v)
+			--log("api.btnp V = ", v)
+			--log("api.btnp TRUE -- 1") -- debug
+			-- debug WTF
 			if v and (v == 0 or (v >= 12 and v % 4 == 0)) then
-				log("api.btnp TRUE") -- debug
+				log("api.btnp TRUE -- 2") -- debug
 				return true
 			end
 		end
-		log("api.btnp FALSE") -- debug
+		--log("api.btnp FALSE") -- debug
 		return false
 	else
 		-- return bitfield of buttons

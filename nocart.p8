@@ -318,6 +318,17 @@ function rnd2d(x,y)
   y^^=x<<16|y>>>16 x^^=y<<16|x>>>16
   return x*0xdeaf.face%1
 end
+
+y^^=x<<16|y>>>16 x^^=y<<16|x>>>16
+
+y^^=x<<16|y>>>16
+x^^=y<<16|x>>>16
+
+y=bor(bxor(y,(shl(x,16),lshr(y,16))))
+x=bor(bxor(x,(shl(y,16),lshr(x,16))))
+
+
+
 ]]
 
 __gfx__
