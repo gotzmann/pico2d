@@ -1264,6 +1264,8 @@ local expr_mask = "([%a%d_%.%[%]%'\"%(%)<>%|&%+%-%*%/\\,#^]+)"
 -- TODO Need much more converters to support latest PICO8 improvements
 -- TODO Optimize for speed? No need for so many passes here
 -- https://gist.github.com/josefnpat/bfe4aaa5bbb44f572cd0
+-- TODO String indexing like str[index]
+-- http://lua-users.org/wiki/StringIndexing
 function patch_lua(lua)
 
 	-- sane defaults
@@ -1414,7 +1416,7 @@ function patch_lua(lua)
 		local _, quotesBefore = string.gsub(string.sub(line, 1, borPos), "\"", "\"")
 		
 		if borCount == 1 and borPos and quotesBefore % 2 == 0 then 
-			log("borPos =, substr = ", borPos, string.sub(line, 1, borPos)) 
+			--log("borPos =, substr = ", borPos, string.sub(line, 1, borPos)) 
 			line = line:gsub(expr_mask .. "%s*|%s*" .. expr_mask, "bor(%1,%2)") -- x | y
 			
 		end
@@ -1424,8 +1426,8 @@ function patch_lua(lua)
 
 	lua = patched
 
-	log("=======[ BITS ]========")
-	log(lua)
+	--log("=======[ BITS ]========")
+	--log(lua)
 
 	--lua = lua:gsub("(.-)=(.-)|(.-)([\r\n])", "%1=bor(%2,%3)\n") -- x | y
 	--log("=======[ BOR ]========")
@@ -1448,8 +1450,8 @@ function patch_lua(lua)
 	-- gotzmann
 	-- integer division - simplified version for only simple named vars division with integers
 	-- TODO complex scenarios involving tables and expressions with ()
-	lua = lua:gsub("%(([%a%d_%.%+-%*/%%]+)%)%s*(\\)%s*(%d+)", "flr(%1/%3)") -- FIXME IT WRONG with ()
-	lua = lua:gsub("([%a%d_%.]+)%s*(\\)%s*(%d+)", "flr(%1/%3)")
+	lua = lua:gsub("%(([%a%d_%.%+-%*/%%]+)%)%s*(\\)%s*(%d+)", "(flr(%1/%3))") -- FIXME IT WRONG with ()
+	lua = lua:gsub("([%a%d_%.]+)%s*(\\)%s*(%d+)", "(flr(%1/%3))")
 
 	--address operators (not ready yet - issues with strings)
 	--lua = lua:gsub("@%s*([^\n\r%s]*)", "peek(%1)")

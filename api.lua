@@ -1091,7 +1091,7 @@ function api.sset(x, y, c)
 	c = flr(tonumber(c) or 0)
 	-- pico8.spritesheet_data:setPixel(x, y, c * 16, 0, 0, 255) -- LOVE11 gamax92
 	pico8.spritesheet_data:setPixel(x, y, c/15, 0, 0, 1)
-	pico8.spritesheet:refresh()
+	--pico8.spritesheet:refresh() -- debug gotzmann
 end
 
 function api.music(n, fade_len, channel_mask) -- luacheck: no unused
@@ -1429,10 +1429,11 @@ function api.memset(dest_addr, val, len)
 	end
 end
 
+-- gotzmann debug
 function api.reload(dest_addr, source_addr, len, filepath) -- luacheck: no unused
 	-- FIXME: doesn't handle ranges, we should keep a "cart rom"
 	-- FIXME: doesn't handle filepaths
-	_load(cartname)
+	--_load(cartname) -- gotzmann
 end
 
 function api.cstore(dest_addr, source_addr, len) -- luacheck: no unused
@@ -2036,6 +2037,46 @@ end
 
 function api.serial(channel, address, length) -- luacheck: no unused
 	-- TODO: implement this
+end
+
+-- gotzmann
+-- https://pico-8.fandom.com/wiki/Split
+function api.split(input, sep) 
+	if sep == nil then
+		sep = ","
+	end
+	local t = {}
+	for str in string.gmatch(input, "([^"..sep.."]+)") do
+		table.insert(t, str)
+	end
+	return t
+end
+
+-- gotzmann
+-- https://pico-8.fandom.com/wiki/Unpack
+function api.unpack(table, i, j)
+	if i == nil then
+		i = 1
+	end 
+	if j == nil then
+		j = #table
+	end 
+	if i == 1 and j == 2 then
+		return table[i], table[j]
+	elseif i == 1 and j == 3 then	
+		return table[i], table[i+1], table[j]
+	elseif i == 1 and j == 4 then	
+		return table[i], table[i+1], table[i+2], table[j]
+	elseif i == 1 and j == 5 then	
+		return table[i], table[i+1], table[i+2], table[i+3], table[j]		
+	else
+		log("[ERR] [api.unpack] exception, table #= )", #table)
+		return nil
+	end
+end
+
+function api.logg(str)
+	log(str)
 end
 
 return api
