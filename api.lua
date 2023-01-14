@@ -1726,7 +1726,7 @@ function api.btnp(key, player)
 
 	-- debug
 	--log("api.btnp", key, player)
-
+--[==[
 	-- gotzmann
 	-- allow normal event loop processing if there infinite game loop with just btnp() inside
 	if love.event then
@@ -1744,7 +1744,7 @@ function api.btnp(key, player)
 		end
 		love.graphics.setCanvas(pico8.screen)
 	end	
-
+]==]
 	if type(key) == "number" then
 		player = player or 0
 
@@ -1753,22 +1753,22 @@ function api.btnp(key, player)
 
 		if pico8.keymap[player] and pico8.keymap[player][key] then
 			local v = pico8.keypressed[player][key]
-
+--[[
 			--gotzmann
 			--log("api.btnp V = ", v)
 			if v == -1 then
 				pico8.keypressed[player][key] = nil
 				return true
 			end
-
+]]
 			-- debug
 			--log("api.btnp V = ", v)
 			--log("api.btnp TRUE -- 1") -- debug
 			-- debug WTF
-			--if v and (v == 0 or (v >= 12 and v % 4 == 0)) then
+			if v and (v == 0 or (v >= 12 and v % 4 == 0)) then
 			--	log("api.btnp TRUE -- 2") -- debug
-			--	return true
-			--end
+				return true
+			end
 		end
 		--log("api.btnp FALSE") -- debug
 		return false

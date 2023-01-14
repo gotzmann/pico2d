@@ -1402,6 +1402,13 @@ function patch_lua(lua)
 
 	local patched = ""
 	for line in lines(lua) do
+
+		-- peek
+		line = line:gsub("@" .. var_mask, "peek(%1)")
+		--line = line:gsub("%" .. var_mask, "peek(%1)")
+		line = line:gsub("$" .. var_mask, "peek4(%1)")
+		--log("=======[ PEEK ]========")
+		--log(line)
 		
 		line = line:gsub(var_mask .. "%s*<<%s*(%d+)", "shl(%1,%2)") -- x<<16
 		--patched = patched .. line .. "\n"
@@ -1450,8 +1457,8 @@ function patch_lua(lua)
 	-- gotzmann
 	-- integer division - simplified version for only simple named vars division with integers
 	-- TODO complex scenarios involving tables and expressions with ()
-	lua = lua:gsub("%(([%a%d_%.%+-%*/%%]+)%)%s*(\\)%s*(%d+)", "(flr(%1/%3))") -- FIXME IT WRONG with ()
-	lua = lua:gsub("([%a%d_%.]+)%s*(\\)%s*(%d+)", "(flr(%1/%3))")
+	lua = lua:gsub("%(([%a%d_%.%+-%*/%%]+)%)%s*(\\)%s*([%d%.]+)", "(flr(%1/%3))") -- FIXME IT WRONG with ()
+	lua = lua:gsub("([%a%d_%.]+)%s*(\\)%s*([%d%.]+)", "(flr(%1/%3))")
 
 	--address operators (not ready yet - issues with strings)
 	--lua = lua:gsub("@%s*([^\n\r%s]*)", "peek(%1)")
